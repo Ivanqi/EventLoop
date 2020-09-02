@@ -8,6 +8,7 @@
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
+// 从主机字节顺序转换为大端顺序
 inline uint64_t hostToNetwork64(uint64_t host64)
 {
     return htobe64(host64);
@@ -33,6 +34,7 @@ inline uint64_t networkToHost32(uint32_t net64)
     return be32toh(net32);
 }
 
+// 从big-endian顺序转换为主机字节顺序
 inline uint64_t networkToHost16(uint16_t net16)
 {
     return be16toh(net16);

@@ -12,6 +12,7 @@ inline void memZero(void *p, size_t n)
     memset(p, 0, n);
 }
 
+// implicit_cast只允许向下转型
 template<typename To, typename From>
 inline To implicit_cast(From const &f)
 {

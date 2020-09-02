@@ -141,7 +141,7 @@ void sockets::toIpPort(char *buf, size_t size, const struct sockaddr* addr)
     toIp(buf, size, addr);
     size_t end = ::strlen(buf);
     const struct sockaddr_in* addr4 = sockaddr_in_cast(addr);
-    uint16_t port = sockets::networkToHost16(addr4->sin_port);
+    uint16_t port = networkToHost16(addr4->sin_port);
     assert(size > end);
     snprintf(buf + end, size - end, ":%u", port);
 }
@@ -168,46 +168,50 @@ void sockets::fromIpPort(const char* ip, uint16_t port, struct sockaddr_in* addr
 
 void sockets::fromIpPort(const char* ip, uint16_t port, struct sockaddr_in6* addr)
 {
-  addr->sin6_family = AF_INET6;
-  addr->sin6_port = hostToNetwork16(port);
-  assert (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0);
+    addr->sin6_family = AF_INET6;
+    addr->sin6_port = hostToNetwork16(port);
+    assert (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0);
 }
 
 int sockets::getSocketError(int sockfd)
 {
-  int optval;
-  socklen_t optlen = static_cast<socklen_t>(sizeof(optval));
+    int optval;
+    socklen_t optlen = static_cast<socklen_t>(sizeof(optval));
 
-  if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
-    return errno;
-  } else {
-    return optval;
-  }
+    // getsockopt 获取socket状态
+    if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
+        return errno;
+    } else {
+        return optval;
+    }
 }
 
 struct sockaddr_in6 sockets::getLocalAddr(int sockfd)
 {
-  struct sockaddr_in6 localaddr;
-  memZero(&localaddr, sizeof localaddr);
-  socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
+    struct sockaddr_in6 localaddr;
+    memZero(&localaddr, sizeof localaddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof(localaddr));
 
-  assert (::getsockname(sockfd, sockaddr_cast(&localaddr), &addrlen) < 0);
-  return localaddr;
+    // getsockname（）返回套接字sockfd的当前地址。绑定在addr指向的缓冲区中
+    assert (::getsockname(sockfd, sockaddr_cast(&localaddr), &addrlen) < 0);
+    return localaddr;
 }
 
 struct sockaddr_in6 sockets::getPeerAddr(int sockfd)
 {
-  struct sockaddr_in6 peeraddr;
-  memZero(&peeraddr, sizeof peeraddr);
-  socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
-  assert(::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) < 0);
-  return peeraddr;
+    struct sockaddr_in6 peeraddr;
+    memZero(&peeraddr, sizeof peeraddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
+
+    // getpeername() 返回连接到套接字的对端的地址 sockfd，绑定在addr指向的缓冲区中。相当于客户端地址
+    assert(::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) < 0);
+    return peeraddr;
 }
 
 bool sockets::isSelfConnect(int sockfd)
 {
-  struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
-  struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);
+    struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
+    struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);
 
   if (localaddr.sin6_family == AF_INET) {
     const struct sockaddr_in* laddr4 = reinterpret_cast<struct sockaddr_in*>(&localaddr);
@@ -218,9 +222,7 @@ bool sockets::isSelfConnect(int sockfd)
   } else if (localaddr.sin6_family == AF_INET6) {
     return localaddr.sin6_port == peeraddr.sin6_port 
             && memcmp(&localaddr.sin6_addr, &peeraddr.sin6_addr, sizeof localaddr.sin6_addr) == 0;
-            
   } else {
     return false;
   }
 }
-
