@@ -37,6 +37,11 @@ class InteAddress
         string toIpPort() const;
 
         uint16_t toPort() const; 
+
+        const struct sockaddr* getSockAddr() const
+        {
+            return sock
+        }
 };
 
 #endif
