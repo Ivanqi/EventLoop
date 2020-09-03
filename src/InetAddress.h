@@ -2,9 +2,10 @@
 #define EVENT_INTERADDRESS_H
 
 #include "StringPiece.h"
+#include "SocketsOps.h"
 #include <netinet/in.h>
 
-class InteAddress
+class InetAddress
 {
     private:
         union {
@@ -40,8 +41,30 @@ class InteAddress
 
         const struct sockaddr* getSockAddr() const
         {
-            return sock
+            return sockets::sockaddr_cast(&addr6_);
         }
+
+        void setSockAddrInet6(const struct sockaddr_in6& addr6)
+        {
+            addr6_ = addr6;
+        }
+
+        uint32_t ipNetEndian() const;
+
+        uint16_t portNetEndian() const 
+        {
+            return addr_.sin_port;
+        }
+
+        /**
+         * 将主机名解析为IP地址，而不是更改端口或sin_系列
+         * 成功时返回true
+         * 线程安全的
+         */
+        static bool resolve(StringArg hostname, InetAddress* result);
+
+        // set IPv6 ScopeID
+        void setScopeId(uint32_t scope_id);
 };
 
 #endif
