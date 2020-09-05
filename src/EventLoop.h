@@ -133,7 +133,7 @@ class EventLoop
         void wakeup();
         void udpateChannel(Channel *channel);
         void removeChannel(Channel *channel);
-        void hasChannel(Channel *channel);
+        bool hasChannel(Channel *channel);
 
         void assertInLoopThread()
         {

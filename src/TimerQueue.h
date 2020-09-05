@@ -39,8 +39,8 @@ class TimerQueue
 
         // 取消
         ActiveTimerSet activeTimers_;
-        bool callingExpiredTimers_; /* atomic */
-         ActiveTimerSet cancelingTimers_;
+        bool callingExpiredTimers_;     /* atomic */
+        ActiveTimerSet cancelingTimers_;
 
     public:
         explicit TimerQueue(EventLoop *loop);
@@ -50,7 +50,7 @@ class TimerQueue
          * 计划在给定时间运行回调，如果 interval>0.0，则重复
          * 线程安全的
          */
-        void addTimer(TimerCallback cb, Timestamp when, double interval);
+        TimerId addTimer(TimerCallback cb, Timestamp when, double interval);
 
         void cancel(TimerId TimerId);
     
