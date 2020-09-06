@@ -153,3 +153,147 @@ void TcpConnection::forceClose()
         loop_->queueInLoop(std::bind(&TcpConnection::forceCloseInLoop, shared_from_this()));
     }
 }
+
+void TcpConnection::forceCloseWithDelay(double seconds)
+{
+    if (state_ == kConnected || state_ == kDisconnecting) {
+        setState(kDisconnecting);
+        // 不强制关闭环路以避免竞争条件
+        loop_->runAfter(seconds, makeWeakCallback(shared_from_this(), &TcpConnection::forceClose));
+    }
+}
+
+void TcpConnection::forceCloseInLoop()
+{
+    loop_->assertInLoopThread();
+    if (state_ == kConnected || state_ == kDisconnecting) {
+        handleClose();
+    }
+}
+
+const char* TcpConnection::stateToString() const
+{
+    switch (state_) {
+        case kDisconnected:
+            return "kDisconnected";
+        
+        case kConnecting:
+            return "kConnecting";
+        
+        case kConnected:
+            return "kConnected";
+
+        case kDisconnecting:
+            return "kDisconnecting";
+
+        default:
+            return "unknown state";
+    }
+}
+
+void TcpConnection::setTcpNoDelay(bool on)
+{
+    socket_->setTcpNoDelay(on);
+}
+
+void TcpConnection::startRead()
+{
+    loop_->runInLoop(std::bind(&TcpConnection::startReadInLoop, this));
+}
+
+void TcpConnection::startReadInLoop()
+{
+    loop_->assertInLoopThread();
+    if (!reading_ || !channel_->isReading()) {
+        channel_->enableReading();
+        reading_ = true;
+    }
+}
+
+void TcpConnection::connectEstablished()
+{
+    loop_->assertInLoopThread();
+    assert(state_ == kConnecting);
+    setState(kConnected);
+    channel_->tie(shared_from_this());
+    channel_->enableReading();
+
+    connectionCallback_(shared_from_this());
+}
+
+void TcpConnection::connectDestroyed()
+{
+    loop_->assertInLoopThread();
+    if (state_ == kConnected) {
+        setState(kDisconnected);
+        channel_->disableAll();
+
+        connectionCallback_(shared_from_this());
+    }
+    
+    channel_->remove();
+}
+
+void TcpConnection::handleRead(Timestamp receiveTime)
+{
+    loop_->assertInLoopThread();
+    int saveErrno = 0;
+
+    ssize_t n = inputBuffer_.readFd(channel_->fd(), &saveErrno);
+    
+    if (n > 0) {
+        messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+    } else if (n == 0) {
+        handleClose();
+    } else {
+        errno = saveErrno;
+        handleError();
+    }
+}
+
+void TcpConnection::handleWrite()
+{
+    loop_->assertInLoopThread();
+    if (channel_->isWriting()) {
+        ssize_t n = sockets::write(channel_->fd(), outputBuffer_.peek(), outputBuffer_.readableBytes());
+
+        if (n > 0) {
+            outputBuffer_.retrieve(0);
+            if (outputBuffer_.readableBytes() == 0) {
+                channel_->disableWriting();
+                if (writeCompleteCallback_) {
+                    loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
+                }
+
+                if (state_ == kDisconnecting) {
+                    shutdownInLoop();
+                }
+            }
+        } else {
+
+        }
+    } else{
+
+    }
+}
+
+void TcpConnection::handleClose()
+{
+    loop_->assertInLoopThread();
+    assert(state_ == kConnected || state_ == kDisconnecting);
+
+    // 我们不关闭fd，把它交给dtor，这样我们可以很容易地找到泄漏
+    setState(kDisconnected);
+    channel_->disableAll();
+
+    TcpConnectionPtr guardThis(shared_from_this());
+    connectionCallback_(guardThis);
+
+    closeCallback(guardThis);
+}
+
+void TcpConnection::handleError()
+{
+    int err = sockets::getSocketError(channel_->fd());
+    printf("TcpConnection::handleError [ %s ] -  - SO_ERROR = %d, %s", name_, err, strerror_tl(err));
+}

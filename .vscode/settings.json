@@ -13,6 +13,7 @@
         "string_view": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "functional": "cpp"
     }
 }
