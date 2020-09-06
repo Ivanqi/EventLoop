@@ -53,7 +53,7 @@ class Socket
         void setReuseAddr(bool on);
 
         // 启用/禁用 SO_REUSEPORT
-        // SO_REUSEPORT 支持多个进程或线程绑定同一个端口，提供服务器性能
+        // SO_REUSEPORT 支持多个进程或线程绑定同一个端口，提高服务器性能
         void setReusePort(bool on);
 
         // 启动/禁用 SO_KEEPALIVE
