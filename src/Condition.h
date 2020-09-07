@@ -1,5 +1,5 @@
-#ifndef LOGGER_CONDITION_H
-#define LOGGER_CONDITION_H
+#ifndef EVENT_CONDITION_H
+#define EVENT_CONDITION_H
 
 #include <pthread.h>
 #include <errno.h>
