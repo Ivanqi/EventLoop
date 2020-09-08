@@ -57,7 +57,7 @@ class TimerQueue
     private:
         void addTimerInLoop(Timer* timer);
         
-        void cacelInLoop(TimerId timerId);
+        void cancelInLoop(TimerId timerId);
 
         // 当timerfd报警时调用
         void handleRead();

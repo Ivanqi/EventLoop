@@ -48,7 +48,7 @@ inline uint64_t hostToNetwork64(uint64_t host64)
 
 inline uint32_t hostToNetwork32(uint32_t host32)
 {
-    return htobe32(hotst32);
+    return htobe32(host32);
 }
 
 inline uint16_t hostToNetwork16(uint16_t host16)
@@ -63,7 +63,7 @@ inline uint64_t networkToHost64(uint64_t net64)
 
 inline uint64_t networkToHost32(uint32_t net64)
 {
-    return be32toh(net32);
+    return be32toh(net64);
 }
 
 // 从big-endian顺序转换为主机字节顺序

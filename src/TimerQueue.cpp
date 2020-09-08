@@ -37,7 +37,7 @@ void readTimerfd(int timerfd, Timestamp now)
     ssize_t n = ::read(timerfd, &howmany, sizeof(howmany));
 
     if (n != sizeof(howmany)) {
-        printf("TimerQueue::handleRead() reads %d bytes instead of 8\n", n);
+        printf("TimerQueue::handleRead() reads %zd bytes instead of 8\n", n);
     }
 }
 
@@ -145,7 +145,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
     assert(timers_.size() == activeTimers_.size());
     std::vector<Entry> expired;
 
-    Entry sentry(now, reinterpret_cast<Time*>(UINTPTR_MAX));
+    Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
 
     TimerList::iterator end = timers_.lower_bound(sentry);
     assert(end == timers_.end() || now < end->first);

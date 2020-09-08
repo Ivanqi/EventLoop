@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-void sockets::setNonBlockAndCloseOnExec(int sockfd)
+void setNonBlockAndCloseOnExec(int sockfd)
 {
     // non-block
     int flags = ::fcntl(sockfd, F_GETFL, 0);
@@ -46,7 +46,7 @@ const struct sockaddr_in* sockets::sockaddr_in_cast(const struct sockaddr* addr)
 
 const struct sockaddr_in6* sockets::sockaddr_in6_cast(const struct sockaddr* addr)
 {
-    return static_cast<const struct sockaddr_in6*>(implicit_cast<const void*>(addr));
+  return static_cast<const struct sockaddr_in6*>(implicit_cast<const void*>(addr));
 }
 
 int sockets::createNonblockingOrDie(sa_family_t family)
@@ -70,7 +70,7 @@ void sockets::listenOrDie(int sockfd)
 
 int sockets::accept(int sockfd, struct sockaddr_in6* addr)
 {
-    socklen_t addlen = static_cast<socklen_t>(sizeof(*addr));
+    socklen_t addrlen = static_cast<socklen_t>(sizeof(*addr));
     int connfd = ::accept(sockfd, sockaddr_cast(addr), &addrlen);
     setNonBlockAndCloseOnExec(connfd);
 
@@ -128,7 +128,7 @@ ssize_t sockets::write(int sockfd, const void *buf, size_t count)
 
 void sockets::close(int sockfd)
 {
-    assert(::close(scokfd) > 0);
+    assert(::close(sockfd) > 0);
 }
 
 void sockets::shutdownWrite(int sockfd)

@@ -7,7 +7,7 @@
 #include <stdio.h>  // snprintf
 
 TcpServer::TcpServer(EventLoop *loop, const InetAddress& listenAddr, const string& nameArg, Option option)
-    :loop_(loop), ipPort(listenAddr.toIpPort()), name_(nameArg),
+    :loop_(loop), ipPort_(listenAddr.toIpPort()), name_(nameArg),
     acceptor_(new Acceptor(loop, listenAddr, option == kReusePort)),
     connectionCallback_(defaultConnectionCallback), messageCallback_(defaultMessageCallback),
     nextConnId_(1)
@@ -21,7 +21,7 @@ TcpServer::~TcpServer()
 
     for (auto& item: connections_) {
         TcpConnectionPtr conn(item.second);
-        item.sencond.reset();
+        item.second.reset();
 
         conn->getLoop()->runInLoop(
             std::bind(&TcpConnection::connectDestroyed, conn)
@@ -42,8 +42,8 @@ void TcpServer::start()
 
         assert(!acceptor_->listenning());
 
-        loop->runInLoop(
-            std::bind(&Acceptor::listen, get_pointer(acceptor_));
+        loop_->runInLoop(
+            std::bind(&Acceptor::listen, get_pointer(acceptor_))
         );
     }
 }
@@ -68,9 +68,10 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);
     conn->setWriteCompleteCallback(writeCompleteCallback_);
+    
+    // 线程不安全
     conn->setCloseCallback(
-        std::bind(&TcpServer::removeConnection, this, _1)   // 线程不安全
-    );
+        std::bind(&TcpServer::removeConnection, this, _1));
 
     ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }

@@ -4,6 +4,7 @@
 
 #include <netdb.h>
 #include <netinet/in.h>
+#include <assert.h>
 
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 

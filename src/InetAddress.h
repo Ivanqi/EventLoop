@@ -16,11 +16,11 @@ class InetAddress
     public:
         // 构造具有给定端口号的端口
         // 主要用于TcpServer监听
-        explicit InteAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
+        explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
 
         // 构造具有给定IP和端口的端点
         // IP 地址类型 "1.2.3.4"
-        InteAddress(StringArg ip, uint16_t port, bool ipv6 = false);
+        InetAddress(StringArg ip, uint16_t port, bool ipv6 = false);
 
         // 使用给定的 struct sockaddr_in构造端点
         // 主要用于接受新的连接

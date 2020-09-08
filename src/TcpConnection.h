@@ -7,7 +7,7 @@
 #include "Buffer.h"
 #include "InetAddress.h"
 
-#include <memory>
+#include <memory>   // shared_from_this
 #include <boost/any.hpp>
 
 
@@ -20,7 +20,7 @@ class Socket;
 /**
  * TCP连接，用于客户端和服务器
  */
-class TcpConnection
+class TcpConnection: public std::enable_shared_from_this<TcpConnection>
 {
     private:
         enum StateE {kDisconnected, kConnecting, kConnected, kDisconnecting};
@@ -40,7 +40,7 @@ class TcpConnection
         MessageCallback messageCallback_;
         WriteCompleteCallback writeCompleteCallback_;
         HighWaterMarkCallback highWaterMarkCallback_;
-        CloseCallback closeCallback;
+        CloseCallback closeCallback_;
         size_t highWaterMark_;
         
         Buffer inputBuffer_;
@@ -155,7 +155,7 @@ class TcpConnection
         // 仅供内部使用
         void setCloseCallback(const CloseCallback& cb)
         {
-            closeCallback = cb;
+            closeCallback_ = cb;
         }
 
         // 当TcpServer接受新连接时调用
@@ -194,5 +194,4 @@ class TcpConnection
 };
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-
 #endif

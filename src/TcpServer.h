@@ -6,6 +6,8 @@
 #include "TcpConnection.h"
 #include <boost/noncopyable.hpp>
 
+#include <map>
+
 class Acceptor;
 class EventLoop;
 class EventLoopThreadPool;
@@ -23,20 +25,11 @@ class TcpServer: boost::noncopyable
         };
 
     private:
-        // 不是线程安全的，而是在循环
-        void newConnection(int sockfd, const InetAddress& peerAddr);
-
-        // 线程安全
-        void removeConnection(const TcpConnection& conn);
-
-        // 不是线程安全的，而是在循环
-        void removeConnctionInLoop(const TcpConnectionPtr& conn);
-
         typedef std::map<string, TcpConnectionPtr> ConectionMap;
 
         EventLoop* loop_;   // the acceptor loop
 
-        const string inPort_;
+        const string ipPort_;
 
         const string name_;
 
@@ -77,6 +70,74 @@ class TcpServer: boost::noncopyable
         {
             return loop_;
         }
+
+        /**
+         * 设置处理输入的线程数
+         * 
+         * 总是接受循环线程中的新连接
+         * 必须在 start函数之前调用
+         * 
+         * @param numThreads
+         *  0 表示循环线程中的所有I/O，不会创建线程。这个是默认值
+         *  1 表示另一个线程中的所有I/O
+         *  N 表示有N个线程的线程池，新的连接按循环分配
+         */
+        void setThreadNum(int numThreads);
+
+        void setThreadInitCallback(const ThreadInitCallback& cb)
+        {
+            threadInitCallback_ = cb;
+        }
+
+        // 调用start函数之后生效
+        std::shared_ptr<EventLoopThreadPool> threadPool()
+        {
+            return threadPool_;
+        }
+
+        /**
+         * 如果服务器没有侦听，则启动服务器
+         * 多次调用是无损的
+         * 线程安全
+         */
+        void start();
+
+        /**
+         * 设置连接回调
+         * 不是线程安全
+         */
+        void setConnectionCallback(const ConnectionCallback& cb)
+        {
+            connectionCallback_ = cb;
+        }
+
+        /**
+         * 设置消息回调
+         * 不是线程安全
+         */
+        void setMessageCallback(const MessageCallback& cb)
+        {
+            messageCallback_ = cb;
+        }
+
+        /**
+         * 设置写入完成回调
+         * 不是线程安全
+         */
+        void setWriteCompleteCallback(const WriteCompleteCallback& cb)
+        {
+            writeCompleteCallback_ = cb;
+        }
+    
+    private:
+        // 不是线程安全的，而是在循环
+        void newConnection(int sockfd, const InetAddress& peerAddr);
+
+        // 线程安全
+        void removeConnection(const TcpConnectionPtr& conn);
+
+        // 不是线程安全的，而是在循环
+        void removeConnectionInLoop(const TcpConnectionPtr& conn);
 };
 
 #endif

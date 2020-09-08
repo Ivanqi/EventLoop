@@ -11,7 +11,7 @@ int createNonblockingOrDie(sa_family_t family);
 
 int connect(int sockfd, const struct sockaddr* addr);
 
-int bindOrDie(int sockfd, const struct sockaddr* addr);
+void bindOrDie(int sockfd, const struct sockaddr* addr);
 
 void listenOrDie(int sockfd);
 
@@ -39,7 +39,7 @@ int getSocketError(int sockfd);
 
 const struct sockaddr* sockaddr_cast(const struct sockaddr_in* addr);
 
-const struct sockaddr* sockaddr_case(const struct sockaddr_in6* addr);
+const struct sockaddr* sockaddr_cast(const struct sockaddr_in6* addr);
 
 struct sockaddr* sockaddr_cast(struct sockaddr_in6* addr);
 

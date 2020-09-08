@@ -23,7 +23,7 @@ class EventLoopThread: boost::noncopyable
         ThreadInitCallback callback_;
     
     public:
-        EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(), const strig& name = string());
+        EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(), const string& name = string());
 
         ~EventLoopThread();
 

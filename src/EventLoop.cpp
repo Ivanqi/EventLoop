@@ -25,7 +25,7 @@ int createEventfd()
     return evtfd;
 }
 
-#pragma GCC diagnostic ignored "-Wold-stype-cast"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 class IgnoreSigPipe
 {
     public:
@@ -34,7 +34,7 @@ class IgnoreSigPipe
             ::signal(SIGPIPE, SIG_IGN);
         }
 };
-#pragma GCC diagnostic error "-Wold-stype-cast"
+#pragma GCC diagnostic error "-Wold-style-cast"
 
 IgnoreSigPipe initObj;
 
@@ -128,7 +128,7 @@ void EventLoop::queueInLoop(Functor cb)
 
 size_t EventLoop::queueSize() const
 {
-    MutexLockGuard lock(mutex_):
+    MutexLockGuard lock(mutex_);
     return pendingFunctors_.size();
 }
 
@@ -190,7 +190,7 @@ void EventLoop::wakeup()
     uint64_t one = 1;
     ssize_t n = sockets::write(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        printf("EventLoop::wakeup() writes %d bytes instead of 8\n", n);
+        printf("EventLoop::wakeup() writes %zd bytes instead of 8\n", n);
     }
 }
 
@@ -199,13 +199,13 @@ void EventLoop::handleRead()
     uint64_t one = 1;
     ssize_t n = sockets::read(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        printf("EventLoop::handleRead() reads %d bytes instead of 8\n", n);
+        printf("EventLoop::handleRead() reads %zd bytes instead of 8\n", n);
     }
 }
 
 void EventLoop::doPendingFunctors()
 {
-    std::vector<Functor> functor;
+    std::vector<Functor> functors;
     callingPendingFunctors_ = true;
 
     {
@@ -213,7 +213,7 @@ void EventLoop::doPendingFunctors()
         functors.swap(pendingFunctors_);
     }
 
-    for (const Functor& functor: functor) {
+    for (const Functor& functor: functors) {
         functor();
     }
     callingPendingFunctors_ = false;
@@ -222,6 +222,6 @@ void EventLoop::doPendingFunctors()
 void EventLoop::printActiveChannels() const
 {
     for (const Channel *channel: activeChannels_) {
-        printf("{ %s }\n", channel->reventsToString());
+        printf("{ %s }\n", channel->reventsToString().c_str());
     }
 }

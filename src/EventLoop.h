@@ -43,7 +43,7 @@ class EventLoop
 
         std::unique_ptr<Poller> poller_;
 
-        std::unique_ptr<TimerQueue> timerQueue;
+        std::unique_ptr<TimerQueue> timerQueue_;
 
         int wakeupFd_;
 
@@ -131,7 +131,7 @@ class EventLoop
         void cancel(TimerId timerId);
 
         void wakeup();
-        void udpateChannel(Channel *channel);
+        void updateChannel(Channel *channel);
         void removeChannel(Channel *channel);
         bool hasChannel(Channel *channel);
 

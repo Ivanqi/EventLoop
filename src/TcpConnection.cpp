@@ -10,7 +10,7 @@
 void defaultConnectionCallback(const TcpConnectionPtr& conn)
 {
     string connectState = conn->connected() ? "UP" : "DOWN";
-    printf("%s -> %s is %s", conn->localAddress().toIpPort(), conn->peerAddress().toIpPort(), connectState);
+    printf("%s -> %s is %s", conn->localAddress().toIpPort().c_str(), conn->peerAddress().toIpPort().c_str(), connectState.c_str());
 }
 
 void defaultMessageCallback(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
@@ -289,11 +289,13 @@ void TcpConnection::handleClose()
     TcpConnectionPtr guardThis(shared_from_this());
     connectionCallback_(guardThis);
 
-    closeCallback(guardThis);
+    closeCallback_(guardThis);
 }
 
+__thread char t_errnobuf[512];
 void TcpConnection::handleError()
 {
     int err = sockets::getSocketError(channel_->fd());
-    printf("TcpConnection::handleError [ %s ] -  - SO_ERROR = %d, %s", name_, err, strerror_tl(err));
+    const char *errmsg = strerror_r(err, t_errnobuf, sizeof(t_errnobuf));
+    printf("TcpConnection::handleError [ %s ] -  - SO_ERROR = %d, %s", name_, err, errmsg);
 }

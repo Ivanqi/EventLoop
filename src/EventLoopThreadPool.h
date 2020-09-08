@@ -5,7 +5,7 @@
 
 #include <functional>
 #include <memory>
-#include <vectory>
+#include <vector>
 #include <boost/noncopyable.hpp>
 
 

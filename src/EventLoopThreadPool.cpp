@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-EventLoopThreadPool::EventLoopThreadPool(EventLoop *baseLoop, const stirng& nameArg)
+EventLoopThreadPool::EventLoopThreadPool(EventLoop *baseLoop, const string& nameArg)
     :baseLoop_(baseLoop), name_(nameArg), started_(false),
     numThreads_(0), next_(0)
 {
@@ -27,7 +27,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
         snprintf(buf, sizeof(buf), "%s%d", name_.c_str(), i);
         EventLoopThread *t = new EventLoopThread(cb, buf);
         threads_.push_back(std::unique_ptr<EventLoopThread>(t));
-        loops_push_back(t->startLoop());
+        loops_.push_back(t->startLoop());
     }
 
     if (numThreads_ == 0 && cb) {
