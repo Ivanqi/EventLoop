@@ -1,5 +1,5 @@
-#ifndef LOGGER_TIMESTAMP_H
-#define LOGGER_TIMESTAMP_H
+#ifndef EVENT_TIMESTAMP_H
+#define EVENT_TIMESTAMP_H
 
 #include <stdint.h>
 #include "Types.h"

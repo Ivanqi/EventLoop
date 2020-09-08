@@ -86,7 +86,7 @@ TimerId TimerQueue::addTimer(TimerCallback cb, Timestamp when, double interval)
 
 void TimerQueue::cancel(TimerId timerId)
 {
-    loop_->runInLoop(std::bind(&TimerQueue::cacelInLoop, this, timerId));
+    loop_->runInLoop(std::bind(&TimerQueue::cancelInLoop, this, timerId));
 }
 
 void TimerQueue::addTimerInLoop(Timer* timer)
@@ -107,7 +107,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
     ActiveTimerSet::iterator it = activeTimers_.find(timer);
 
     if (it != activeTimers_.end()) {
-        size_t n = timers_.erase(Entry(it->first->expiration(), it->first);
+        size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
         assert(n == 1);
         (void)n;
         delete it->first;

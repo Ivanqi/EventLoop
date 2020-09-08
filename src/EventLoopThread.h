@@ -14,11 +14,11 @@ class EventLoopThread: boost::noncopyable
         typedef std::function<void(EventLoop*)> ThreadInitCallback;
 
     private:
-        MutexLock mutex_;
         EventLoop *loop_;
-
         bool exiting_;
         Thread thread_;
+        MutexLock mutex_;
+
         Condition cond_;
         ThreadInitCallback callback_;
     

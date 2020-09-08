@@ -9,6 +9,7 @@
 
 #include <memory>   // shared_from_this
 #include <boost/any.hpp>
+#include <boost/noncopyable.hpp>
 
 
 struct tcp_info;
@@ -20,7 +21,7 @@ class Socket;
 /**
  * TCP连接，用于客户端和服务器
  */
-class TcpConnection: public std::enable_shared_from_this<TcpConnection>
+class TcpConnection: boost::noncopyable, public std::enable_shared_from_this<TcpConnection>
 {
     private:
         enum StateE {kDisconnected, kConnecting, kConnected, kDisconnecting};

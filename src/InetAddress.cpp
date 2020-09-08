@@ -15,20 +15,23 @@ static const in_addr_t kInaddrAny = INADDR_ANY;
 static const in_addr_t kInaddrLoopback = INADDR_LOOPBACK;
 #pragma GCC diagnostic error "-Wold-style-cast"
 
-static_assert(sizeof(InetAddress) == sizeof(struct sockaddr_in6), "InetAddress is same size as sockaddr_in6");
 
-static_assert(offsetof(sockaddr_in, sin_family) == 0, "sin_family offset 0");
+// static_assert(sizeof(InetAddress) == sizeof(struct sockaddr_in6),
+//               "InetAddress is same size as sockaddr_in6");
+              
+// static_assert(offsetof(sockaddr_in, sin_family) == 0, "sin_family offset 0");
 
-static_assert(offsetof(sockaddr_in6, sin6_family) == 0, "sin6_family offset 0");
+// static_assert(offsetof(sockaddr_in6, sin6_family) == 0, "sin6_family offset 0");
 
-static_assert(offsetof(sockaddr_in, sin_port) == 2, "sin_port offset 2");
+// static_assert(offsetof(sockaddr_in, sin_port) == 2, "sin_port offset 2");
 
-static_assert(offsetof(sockaddr_in6, sin6_port) == 2, "sin6_port offset 2");
+// static_assert(offsetof(sockaddr_in6, sin6_port) == 2, "sin6_port offset 2");
+
 
 InetAddress::InetAddress(uint16_t port, bool loopbackOnly, bool ipv6)
 {
-    static_assert(offsetof(InetAddress, addr6_) == 0, "addr6_ offset 0");
-    static_assert(offsetof(InetAddress, addr_) == 0, "addr_ offset 0");
+    // static_assert(offsetof(InetAddress, addr6_) == 0, "addr6_ offset 0");
+    // static_assert(offsetof(InetAddress, addr_) == 0, "addr_ offset 0");
 
     if (ipv6) {
         memZero(&addr6_, sizeof(addr6_));

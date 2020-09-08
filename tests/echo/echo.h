@@ -16,8 +16,7 @@ class EchoServer
     private:
         void onConnection(const TcpConnectionPtr& conn);
 
-        void onMessage(TcpConnectionPtr& conn, Buffer *buff, Timestamp time);
-
+        void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp time);
 };
 
 #endif

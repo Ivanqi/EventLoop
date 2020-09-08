@@ -297,5 +297,5 @@ void TcpConnection::handleError()
 {
     int err = sockets::getSocketError(channel_->fd());
     const char *errmsg = strerror_r(err, t_errnobuf, sizeof(t_errnobuf));
-    printf("TcpConnection::handleError [ %s ] -  - SO_ERROR = %d, %s", name_, err, errmsg);
+    printf("TcpConnection::handleError [ %s ] -  - SO_ERROR = %d, %s", name_.c_str(), err, errmsg);
 }

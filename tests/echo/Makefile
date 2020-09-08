@@ -5,7 +5,7 @@ SRC := $(wildcard $(SRCDIR)/src/*.cpp)
 override SRC := $(SRC) $(TEST) 
 TARGET := echo_test
 CXX := g++
-INCLUDE := -I $(SRCDIR)/src/
+INCLUDE := -I $(SRCDIR)/src/ -I $(PROJECT)
 CFLAGS := -std=c++11 -g -pg -Wall -O3 -D_PTHREADS
 LIBS := -lpthread
 

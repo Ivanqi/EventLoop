@@ -36,7 +36,7 @@ struct sockaddr* sockets::sockaddr_cast(struct sockaddr_in6* addr)
 
 const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in* addr)
 {
-    return static_cast<struct sockaddr*>(implicit_cast<void*>(addr));
+    return static_cast<const struct sockaddr*>(implicit_cast<const void*>(addr));
 }
 
 const struct sockaddr_in* sockets::sockaddr_in_cast(const struct sockaddr* addr)
@@ -51,7 +51,7 @@ const struct sockaddr_in6* sockets::sockaddr_in6_cast(const struct sockaddr* add
 
 int sockets::createNonblockingOrDie(sa_family_t family)
 {
-    int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC | IPPROTO_TCP);
+    int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     assert(sockfd > 0);
     return sockfd;
 }

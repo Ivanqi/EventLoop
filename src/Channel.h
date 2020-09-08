@@ -87,7 +87,7 @@ class Channel
          * 将 channel 绑定到shared_ptr管理的所有者对象
          * 防止所有者对象在handleEvent中被销毁
          */
-        void tie(const std::shared_ptr<void *>&);
+        void tie(const std::shared_ptr<void>&);
 
         int fd() const
         {
