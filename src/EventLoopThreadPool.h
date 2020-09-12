@@ -25,7 +25,8 @@ class EventLoopThreadPool: boost::noncopyable
     
     public:
         typedef std::function<void(EventLoop*)> ThreadInitCallback;
-
+        EventLoopThreadPool();
+        
         EventLoopThreadPool(EventLoop *baseLoop, const string& nameArg);
 
         ~EventLoopThreadPool();

@@ -24,26 +24,31 @@ void setNonBlockAndCloseOnExec(int sockfd)
     (void) ret;
 }
 
+// sockaddr_in6转换为sockaddr，给操作系统使用
 const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in6* addr)
 {
     return static_cast<const struct sockaddr*>(implicit_cast<const void*>(addr));
 }
 
+// sockaddr_in6转换为sockaddr，给操作系统使用
 struct sockaddr* sockets::sockaddr_cast(struct sockaddr_in6* addr)
 {
     return static_cast<struct sockaddr*>(implicit_cast<void*>(addr));
 }
 
+// sockaddr_in转换为sockaddr，给操作系统使用
 const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in* addr)
 {
     return static_cast<const struct sockaddr*>(implicit_cast<const void*>(addr));
 }
 
+// sockaddr转换为sockaddr_in
 const struct sockaddr_in* sockets::sockaddr_in_cast(const struct sockaddr* addr)
 {
     return static_cast<const struct sockaddr_in*>(implicit_cast<const void*>(addr));
 }
 
+// sockaddr转换为sockaddr_in6
 const struct sockaddr_in6* sockets::sockaddr_in6_cast(const struct sockaddr* addr)
 {
   return static_cast<const struct sockaddr_in6*>(implicit_cast<const void*>(addr));
@@ -51,6 +56,24 @@ const struct sockaddr_in6* sockets::sockaddr_in6_cast(const struct sockaddr* add
 
 int sockets::createNonblockingOrDie(sa_family_t family)
 {
+    /**
+     * SOCK_STREAM
+     *  提供一个顺序化的，可靠的，全双工的，基于连接的字节流。
+     *  支持数据传送流量控制机制。TCP协议即基于这种流式套接字
+     * 
+     * SOCK_NONBLOCK
+     *  在新的打开文件描述上设置O_NONBLOCK status标志
+     *  使用此标志可保存对fcntl(2)的额外调用以实现相同的效果结果 
+     * 
+     * SOCK_CLOEXEC
+     *  在新的文件描述符上设置close on exec（FD_CLOEXEC）标志
+     *  有关原因，请参阅open（2）中对O_CLOEXEC标志的描述
+     *  调用open函数O_CLOEXEC模式打开的文件描述符在执行exec调用新程序中关闭，且为原子操作
+     *  调用open函数不使用O_CLOEXEC模式打开的文件描述符，然后调用fcntl 函数设置FD_CLOEXEC选项，效果和使用O_CLOEXEC选项open函数相同
+     * 
+     * IPPROTO_TCP
+     *  Tcp 协议
+     */
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     assert(sockfd > 0);
     return sockfd;
@@ -59,13 +82,13 @@ int sockets::createNonblockingOrDie(sa_family_t family)
 void sockets::bindOrDie(int sockfd, const struct sockaddr* addr)
 {
     int ret = ::bind(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
-    assert(ret > 0);
+    assert(ret != -1);
 }
 
 void sockets::listenOrDie(int sockfd)
 {
     int ret = ::listen(sockfd, SOMAXCONN);
-    assert(ret > 0);
+    assert(ret != 0);
 }
 
 int sockets::accept(int sockfd, struct sockaddr_in6* addr)
@@ -163,6 +186,12 @@ void sockets::fromIpPort(const char* ip, uint16_t port, struct sockaddr_in* addr
 {
     addr->sin_family = AF_INET;
     addr->sin_port = hostToNetwork16(port);
+    /**
+     * int inet_pton(int af, const char *src, void *dst);
+     * inet_pton（）在成功时返回1（网络地址成功已转换）
+     * 如果src不包含字符串，则返回0表示指定地址族中的有效网络地址
+     * 如果af不包含有效的地址族，则返回-1并errno设置为EAFNOSUPPORT。
+     */
     assert(::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0);
 }
 
@@ -179,6 +208,7 @@ int sockets::getSocketError(int sockfd)
     socklen_t optlen = static_cast<socklen_t>(sizeof(optval));
 
     // getsockopt 获取socket状态
+    // 成功时，返回0。出错时，返回-1，错误原因存于errno中。
     if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
         return errno;
     } else {
@@ -193,6 +223,7 @@ struct sockaddr_in6 sockets::getLocalAddr(int sockfd)
     socklen_t addrlen = static_cast<socklen_t>(sizeof(localaddr));
 
     // getsockname（）返回套接字sockfd的当前地址。绑定在addr指向的缓冲区中
+    // 成功时，返回0。发生错误时，返回-1，错误原因存于errno中
     assert (::getsockname(sockfd, sockaddr_cast(&localaddr), &addrlen) < 0);
     return localaddr;
 }
@@ -204,6 +235,7 @@ struct sockaddr_in6 sockets::getPeerAddr(int sockfd)
     socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
 
     // getpeername() 返回连接到套接字的对端的地址 sockfd，绑定在addr指向的缓冲区中。相当于客户端地址
+    // 成功时，返回0。发生错误时，返回-1，错误原因存于errno中。
     assert(::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) < 0);
     return peeraddr;
 }
@@ -213,16 +245,17 @@ bool sockets::isSelfConnect(int sockfd)
     struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
     struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);
 
-  if (localaddr.sin6_family == AF_INET) {
-    const struct sockaddr_in* laddr4 = reinterpret_cast<struct sockaddr_in*>(&localaddr);
-    const struct sockaddr_in* raddr4 = reinterpret_cast<struct sockaddr_in*>(&peeraddr);
+    if (localaddr.sin6_family == AF_INET) {
+        const struct sockaddr_in* laddr4 = reinterpret_cast<struct sockaddr_in*>(&localaddr);
+        const struct sockaddr_in* raddr4 = reinterpret_cast<struct sockaddr_in*>(&peeraddr);
 
-    return laddr4->sin_port == raddr4->sin_port && laddr4->sin_addr.s_addr == raddr4->sin_addr.s_addr;
+        return laddr4->sin_port == raddr4->sin_port && laddr4->sin_addr.s_addr == raddr4->sin_addr.s_addr;
 
-  } else if (localaddr.sin6_family == AF_INET6) {
-    return localaddr.sin6_port == peeraddr.sin6_port 
+    } else if (localaddr.sin6_family == AF_INET6) {
+        return localaddr.sin6_port == peeraddr.sin6_port 
             && memcmp(&localaddr.sin6_addr, &peeraddr.sin6_addr, sizeof localaddr.sin6_addr) == 0;
-  } else {
-    return false;
-  }
+
+    } else {
+        return false;
+    }
 }

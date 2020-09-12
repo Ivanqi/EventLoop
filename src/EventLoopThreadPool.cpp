@@ -4,10 +4,16 @@
 
 #include <stdio.h>
 
+EventLoopThreadPool::EventLoopThreadPool()
+{
+    printf("EventLoopThreadPool::EventLoopThreadPool22222\n");
+}
+
 EventLoopThreadPool::EventLoopThreadPool(EventLoop *baseLoop, const string& nameArg)
     :baseLoop_(baseLoop), name_(nameArg), started_(false),
     numThreads_(0), next_(0)
 {
+    printf("EventLoopThreadPool::EventLoopThreadPool\n");
 }
 
 EventLoopThreadPool::~EventLoopThreadPool()
@@ -17,6 +23,7 @@ EventLoopThreadPool::~EventLoopThreadPool()
 
 void EventLoopThreadPool::start(const ThreadInitCallback& cb)
 {
+    printf("EventLoopThreadPool::start\n");
     assert(!started_);
     baseLoop_->assertInLoopThread();
 
