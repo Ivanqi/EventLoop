@@ -88,7 +88,7 @@ void sockets::bindOrDie(int sockfd, const struct sockaddr* addr)
 void sockets::listenOrDie(int sockfd)
 {
     int ret = ::listen(sockfd, SOMAXCONN);
-    assert(ret != 0);
+    assert(ret != -1);
 }
 
 int sockets::accept(int sockfd, struct sockaddr_in6* addr)
@@ -224,7 +224,7 @@ struct sockaddr_in6 sockets::getLocalAddr(int sockfd)
 
     // getsockname（）返回套接字sockfd的当前地址。绑定在addr指向的缓冲区中
     // 成功时，返回0。发生错误时，返回-1，错误原因存于errno中
-    assert (::getsockname(sockfd, sockaddr_cast(&localaddr), &addrlen) < 0);
+    assert (::getsockname(sockfd, sockaddr_cast(&localaddr), &addrlen) != -1);
     return localaddr;
 }
 

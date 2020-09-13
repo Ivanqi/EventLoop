@@ -9,7 +9,7 @@ int main() {
 
     printf("pid = %d\n", getpid());
     EventLoop loop;
-    InetAddress listenAddr(2007, true);
+    InetAddress listenAddr(2007);
     EchoServer server(&loop, listenAddr);
 
     server.start();
