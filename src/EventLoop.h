@@ -45,7 +45,7 @@ class EventLoop
 
         std::unique_ptr<TimerQueue> timerQueue_;
 
-        int wakeupFd_;
+        int wakeupFd_;  // epollfd
 
         /**
          * 与TimerQueue不同，TimerQueue是一个内部类，我们不向客户机公开Channel

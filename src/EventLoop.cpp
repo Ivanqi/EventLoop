@@ -185,6 +185,7 @@ void EventLoop::abortNotInLoopThread()
     printf("EventLoop::abortNotInLoopThread - was created in threadId_ =  %d, current thread id = %d\n", threadId_, CurrentThread::tid());
 }
 
+// 往wakeupFd_写入内容
 void EventLoop::wakeup()
 {
     uint64_t one = 1;
@@ -194,6 +195,7 @@ void EventLoop::wakeup()
     }
 }
 
+// 从wakeupFd_读出内容
 void EventLoop::handleRead()
 {
     uint64_t one = 1;
