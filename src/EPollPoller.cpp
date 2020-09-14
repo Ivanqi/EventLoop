@@ -93,9 +93,10 @@ void EPollPoller::updateChannel(Channel* channel)
         if (index == kNew) {
             assert(channels_.find(fd) == channels_.end());
             channels_[fd] = channel;
+            
         } else { // index == kDeleted
-        assert(channels_.find(fd) != channels_.end());
-        assert(channels_[fd] == channel);
+            assert(channels_.find(fd) != channels_.end());
+            assert(channels_[fd] == channel);
         }
 
         channel->set_index(kAdded);

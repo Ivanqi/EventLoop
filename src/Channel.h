@@ -32,11 +32,11 @@ class Channel
 
         const int fd_;
 
-        int events_;
+        int events_;    //  poll专属事件
 
         int revents_;   // 接收epoll或poll事件类型
 
-        int index_; // 由 Poller使用
+        int index_;     // 由 Poller使用。用于给Poller判断是否需要增加，修改，删除事件
 
         bool logHup_;
 

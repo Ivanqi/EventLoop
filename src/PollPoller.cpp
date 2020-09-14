@@ -70,6 +70,7 @@ void PollPoller::updateChannel(Channel *channel)
         int idx = static_cast<int>(pollfds_.size()) - 1;
         channel->set_index(idx);
         channels_[pfd.fd] = channel;
+        
     } else {
         // 更新现有的
         assert(channels_.find(channel->fd()) != channels_.end());
