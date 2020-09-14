@@ -81,6 +81,7 @@ void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels)
     }
 }
 
+// 新增，修改，删除epoll事件
 void EPollPoller::updateChannel(Channel* channel)
 {
     Poller::assertInLoopThread();
@@ -92,13 +93,15 @@ void EPollPoller::updateChannel(Channel* channel)
         int fd = channel->fd();
         if (index == kNew) {
             assert(channels_.find(fd) == channels_.end());
+            // 建立 fd 和 channel的映射
             channels_[fd] = channel;
-            
+
         } else { // index == kDeleted
             assert(channels_.find(fd) != channels_.end());
             assert(channels_[fd] == channel);
         }
 
+        // 设置 channel index值，index = kAdded
         channel->set_index(kAdded);
         update(EPOLL_CTL_ADD, channel);
 
@@ -146,11 +149,20 @@ void EPollPoller::update(int operation, Channel* channel)
 {
     struct epoll_event event;
     memZero(&event, sizeof event);
+    // 设置 epoll 的配置项
     event.events = channel->events();
     event.data.ptr = channel;
     int fd = channel->fd();
     printf("epoll_ctl op =  %s fd = %d event = { %s }\n", operationToString(operation), fd, channel->eventsToString().c_str());
 
+    /**
+     * epollfd_: 参数要操作的文件描述符
+     * 
+     * operation: 参数则指定操作类型，操作类型有如3种
+     *  EPOLL_CTL_ADD：往事件表中注册fd上的事件
+     *  EPOLL_CTL_MOD：修改fd上的注册事件
+     *  EPOLL_CTL_DEL：删除fd上的注册事件
+     */
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
         if (operation == EPOLL_CTL_DEL) {
             printf("epoll_ctl op = %s fd = %d\n", operationToString(operation), fd);

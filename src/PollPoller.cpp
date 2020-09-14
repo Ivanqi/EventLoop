@@ -53,6 +53,7 @@ void PollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) 
     }
 }
 
+// 新增或修改poll 事件
 void PollPoller::updateChannel(Channel *channel)
 {
     Poller::assertInLoopThread();
@@ -63,14 +64,20 @@ void PollPoller::updateChannel(Channel *channel)
         assert(channels_.find(channel->fd()) == channels_.end());
 
         struct pollfd pfd;
+
+        // 设置多个pollfd的fd, events和revents
+        pfd.fd = channel->fd();
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
         pollfds_.push_back(pfd);
 
+        // 更新channel的index值, index = pollfds_.size() - 1
         int idx = static_cast<int>(pollfds_.size()) - 1;
         channel->set_index(idx);
-        channels_[pfd.fd] = channel;
         
+        // 维护pfd.fd 和 channel 的映射关系 
+        channels_[pfd.fd] = channel;
+
     } else {
         // 更新现有的
         assert(channels_.find(channel->fd()) != channels_.end());

@@ -56,6 +56,7 @@ EventLoop::EventLoop()
     }
 
     wakeupChannel_->setReadCallback(std::bind(&EventLoop::handleRead, this));
+    // 初始化poller
     wakeupChannel_->enableReading();
 }
 
@@ -116,6 +117,7 @@ void EventLoop::runInLoop(Functor cb)
 
 void EventLoop::queueInLoop(Functor cb)
 {
+    // 减少锁范围
     {
         MutexLockGuard lock(mutex_);
         pendingFunctors_.push_back(std::move(cb));
@@ -185,7 +187,7 @@ void EventLoop::abortNotInLoopThread()
     printf("EventLoop::abortNotInLoopThread - was created in threadId_ =  %d, current thread id = %d\n", threadId_, CurrentThread::tid());
 }
 
-// 往wakeupFd_写入内容
+// 往wakeupFd_写入内容.唤醒wakeupFd_句柄
 void EventLoop::wakeup()
 {
     uint64_t one = 1;
