@@ -77,6 +77,7 @@ void EventLoop::loop()
 
     while (!quit_) {
         activeChannels_.clear();
+        // 监听文件描述符注册的事件
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
         ++iteration_;
 
@@ -187,7 +188,11 @@ void EventLoop::abortNotInLoopThread()
     printf("EventLoop::abortNotInLoopThread - was created in threadId_ =  %d, current thread id = %d\n", threadId_, CurrentThread::tid());
 }
 
-// 往wakeupFd_写入内容.唤醒wakeupFd_句柄
+/**
+ * 往wakeupFd_写入内容.唤醒wakeupFd_句柄
+ * wakeup() 的过程本质上是对这个eventfd进行写操作，以触发eventfd的可读事件
+ * 这样起到了唤醒EventLoop的作用
+ */
 void EventLoop::wakeup()
 {
     uint64_t one = 1;
@@ -212,6 +217,7 @@ void EventLoop::doPendingFunctors()
     std::vector<Functor> functors;
     callingPendingFunctors_ = true;
 
+    // 缩小锁范围
     {
         MutexLockGuard lock(mutex_);
         functors.swap(pendingFunctors_);

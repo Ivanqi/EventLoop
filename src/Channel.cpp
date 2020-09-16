@@ -45,6 +45,7 @@ void Channel::remove()
     loop_->removeChannel(this);
 }
 
+// 事件同一处理方法
 void Channel::handleEvent(Timestamp receiveTime)
 {
     std::shared_ptr<void> guard;
@@ -61,6 +62,7 @@ void Channel::handleEvent(Timestamp receiveTime)
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
     eventHandling_= true;
+    // POLLIN：有数据可读； POLLHUP: 对方描述符挂起
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN)) {
         if (logHup_) {
             printf("fd = %d Channel::handle_event() POLLHUP\n", fd_);
@@ -68,18 +70,22 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
         if (closeCallback_) closeCallback_();
     }
 
+    // POLLNVAL: 指定的文件描述符非法
     if (revents_ & POLLNVAL) {
         printf("fd = %d Channel::handle_event() POLLNVAL\n", fd_);
     }
 
+    // POLLERR: 指定的文件描述符发生错误； POLLNVAL: 指定的文件描述符非法
     if (revents_ & (POLLERR | POLLNVAL)) {
         if (errorCallback_) errorCallback_();
     }
 
+    // POLLIN: 有数据可读; POLLPRI: 有紧迫数据可读; POLLRDHUP: 指定的文件描述符挂起事件
     if (revents_ & (POLLIN | POLLPRI | POLLRDHUP)) {
         if (readCallback_) readCallback_(receiveTime);
     }
 
+    // POLLOUT: 写数据不会导致阻塞
     if (revents_ & POLLOUT) {
         if (writeCallback_) writeCallback_();
     }

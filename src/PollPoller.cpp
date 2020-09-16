@@ -23,7 +23,7 @@ Timestamp PollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 
     Timestamp now(Timestamp::now());
 
-    if (numEvents > 0) {
+    if (numEvents > 0) {    // poll 事件触发成功
         printf("%d events happened\n", numEvents);
         fillActiveChannels(numEvents, activeChannels);
     } else if (numEvents == 0) {
@@ -39,15 +39,19 @@ Timestamp PollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 
 void PollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const
 {
+    // 遍历所有的文件描述符
     for (PollFdList::const_iterator pfd = pollfds_.begin(); pfd != pollfds_.end() && numEvents > 0; ++pfd) {
+        // pfd->revents > 0，一般包含, POLLIN, POLLPRI, POLLOUT, POLLRDHUP, POLLERR, POLLHUP
         if (pfd->revents > 0) {
             --numEvents;
             ChannelMap::const_iterator ch = channels_.find(pfd->fd);
             assert(ch != channels_.end());
 
+            // 获取fd所对应的channel
             Channel *channel = ch->second;
             assert(channel->fd() == pfd->fd);
 
+            // 把所得的channel加入到EventLoop 的activeChannels中
             activeChannels->push_back(channel);
         }
     }
