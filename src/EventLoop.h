@@ -135,6 +135,7 @@ class EventLoop
         void removeChannel(Channel *channel);
         bool hasChannel(Channel *channel);
 
+        // 判断是不是同一个线程
         void assertInLoopThread()
         {
             if (!isInLoopThread()) {
@@ -142,6 +143,7 @@ class EventLoop
             }
         }
 
+        // 判断当前线程是否变化
         bool isInLoopThread() const 
         {
             return threadId_ == CurrentThread::tid();

@@ -16,6 +16,8 @@ Acceptor::Acceptor(EventLoop *loop, const InetAddress& listenAddr, bool reusepor
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(reuseport);
     acceptSocket_.bindAddress(listenAddr);
+    
+    // 设置channel 的 POLLIN | POLLPRI | POLLRDHU 事件回调函数
     acceptChannel_.setReadCallback(
         std::bind(&Acceptor::handleRead, this)
     );

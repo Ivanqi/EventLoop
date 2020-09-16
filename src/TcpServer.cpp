@@ -13,6 +13,7 @@ TcpServer::TcpServer(EventLoop *loop, const InetAddress& listenAddr, const strin
     connectionCallback_(defaultConnectionCallback), messageCallback_(defaultMessageCallback),
     nextConnId_(1)
 {
+    // 设置 socket accept 的执行函数
     acceptor_->setNewConnectionCallback(std::bind(&TcpServer::newConnection, this, _1, _2));
 }
 
@@ -49,8 +50,18 @@ void TcpServer::start()
     }
 }
 
+/**
+ * @param int sockfd 对端的文件描述符
+ * @param const InetAddress& peerAddr 对端的IP地址
+ * 
+ * 所有对IO和buffer的读写，都应该在IO线程中完成
+ * 
+ * 一般情况下，先把交给Worker线程池之前，应该现在IO线程中把Buffer进行切分解包等动作
+ * 将解包后的消息交由线程池处理，避免多个线程操作同一个资源
+ */
 void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
+    // 在一个IO线程中
     loop_->assertInLoopThread();
     EventLoop *ioLoop = threadPool_->getNextLoop();
 
