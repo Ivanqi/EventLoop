@@ -49,6 +49,7 @@ void PollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) 
 
             // 获取fd所对应的channel
             Channel *channel = ch->second;
+            // 相互验证
             assert(channel->fd() == pfd->fd);
 
             // 把所得的channel加入到EventLoop 的activeChannels中

@@ -34,6 +34,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
     }
 }
 
+// 获取一个线程
 EventLoop* EventLoopThreadPool::getNextLoop()
 {
     baseLoop_->assertInLoopThread();

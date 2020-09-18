@@ -47,7 +47,7 @@ class TcpServer: boost::noncopyable
 
         AtomicInt32 started_;
 
-        int nextConnId_;
+        int nextConnId_;    // 连接客户端数量
 
         ConectionMap connections_;
 

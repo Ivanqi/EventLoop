@@ -38,6 +38,7 @@ void Acceptor::listen()
     acceptChannel_.enableReading();
 }
 
+// 接受客户端的连接
 void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();

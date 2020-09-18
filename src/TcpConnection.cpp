@@ -5,6 +5,7 @@
 #include "Socket.h"
 #include "SocketsOps.h"
 
+#include <stdio.h>
 #include <errno.h>
 
 void defaultConnectionCallback(const TcpConnectionPtr& conn)
@@ -120,6 +121,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
             loop_->queueInLoop(std::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
         }
 
+        // 添加到缓冲区
         outputBuffer_.append(static_cast<const char *>(data) + nwrote, remaining);
 
         if (!channel_->isWriting()) {
@@ -234,6 +236,7 @@ void TcpConnection::connectDestroyed()
     channel_->remove();
 }
 
+// 读取对端发送的消息
 void TcpConnection::handleRead(Timestamp receiveTime)
 {
     loop_->assertInLoopThread();
@@ -251,6 +254,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     }
 }
 
+// 往对端写入消息
 void TcpConnection::handleWrite()
 {
     loop_->assertInLoopThread();
@@ -270,10 +274,10 @@ void TcpConnection::handleWrite()
                 }
             }
         } else {
-
+            printf("TcpConnection::handleWrit\n");
         }
     } else{
-
+        printf("Connection fd =  %d is down, no more writing\n", channel_->fd());
     }
 }
 

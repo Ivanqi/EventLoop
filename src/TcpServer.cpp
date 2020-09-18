@@ -51,7 +51,7 @@ void TcpServer::start()
 }
 
 /**
- * @param int sockfd 对端的文件描述符
+ * @param int sockfd 对端的的文件描述符
  * @param const InetAddress& peerAddr 对端的IP地址
  * 
  * 所有对IO和buffer的读写，都应该在IO线程中完成
@@ -63,6 +63,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
     // 在一个IO线程中
     loop_->assertInLoopThread();
+    // 获取一个io线程
     EventLoop *ioLoop = threadPool_->getNextLoop();
 
     char buf[64];
