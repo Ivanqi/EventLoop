@@ -22,6 +22,7 @@ EventLoopThread::~EventLoopThread()
     }
 }
 
+// 启动线程。设置条件变量，进入休眠状态
 EventLoop* EventLoopThread::startLoop()
 {
     assert(!thread_.started());
@@ -46,6 +47,7 @@ void EventLoopThread::threadFunc()
         callback_(&loop);
     }
 
+    // 设置线程loop。然后唤醒线程
     {
         MutexLockGuard lock(mutex_);
         loop_ = &loop;
