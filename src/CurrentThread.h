@@ -38,6 +38,8 @@ namespace CurrentThread
         return t_threadName;
     }
 
+    void sleepUsec(int64_t usec);  // for testing
+
     string stackTrace(bool demangle);
 }
 #endif

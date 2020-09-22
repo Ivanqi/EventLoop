@@ -11,6 +11,7 @@
 #include "Thread.h"
 #include "CurrentThread.h"
 #include "Exception.h"
+#include "Timestamp.h"
 
 pid_t gettid()
 {
@@ -23,6 +24,14 @@ void CurrentThread::cacheTid()
         t_cachedTid = gettid();
         t_tidStringLength = snprintf(t_tidString, sizeof(t_tidString), "%5d", t_cachedTid);
     }
+}
+
+void CurrentThread::sleepUsec(int64_t usec)
+{
+    struct timespec ts = {0, 0};
+    ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
+    ts.tv_nsec = static_cast<long>(usec % Timestamp::kMicroSecondsPerSecond * 1000);
+    ::nanosleep(&ts, NULL);
 }
 
 // 为了在线程中保留name,tid这些数据

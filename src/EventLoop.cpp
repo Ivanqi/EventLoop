@@ -50,7 +50,7 @@ EventLoop::EventLoop()
     wakeupChannel_(new Channel(this, wakeupFd_)), currentActiveChannel_(NULL)
 {
     if (t_loopInThisThread) {
-        printf("t_loopInThisThread is not null, exists in this thread: %d", threadId_);
+        printf("t_loopInThisThread is not null, exists in this thread: %d\n", threadId_);
     } else {
         t_loopInThisThread = this;
     }
