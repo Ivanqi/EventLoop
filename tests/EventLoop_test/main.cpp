@@ -38,6 +38,7 @@ int main() {
     Thread thread(threadFunc);
     thread.start();
 
+    // 通过完成的loop，延长了thread中的loop的生命周期
     loop.loop();
 
     return 0;

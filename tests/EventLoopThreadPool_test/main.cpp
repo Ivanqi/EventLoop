@@ -23,7 +23,7 @@ int main() {
     loop.runAfter(11, std::bind(&EventLoop::quit, &loop));
 
     {
-        printf("Single thread %p:\n", &loop);
+        printf("\nSingle thread %p:\n", &loop);
         EventLoopThreadPool model(&loop, "single");
         model.setThreadNum(0);
         model.start(init);
@@ -32,7 +32,7 @@ int main() {
         assert(model.getNextLoop() == &loop);
         assert(model.getNextLoop() == &loop);
     }
-
+    printf("\n ------------------- \n");
     {
         printf("Another thread:\n");
         EventLoopThreadPool model(&loop, "another");
@@ -46,7 +46,7 @@ int main() {
         assert(nextLoop == model.getNextLoop());
         ::sleep(3);
     }
-
+    printf("\n ------------------- \n");
     {
         printf("Three threads: \n");
         EventLoopThreadPool model(&loop, "three");

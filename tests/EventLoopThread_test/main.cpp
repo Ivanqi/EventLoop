@@ -24,7 +24,7 @@ int main() {
     {
         EventLoopThread thr1;   // never start
     }
-
+    printf("\n ------------------- \n");
     {
         // dtor calss quit()
         EventLoopThread thr2;
@@ -32,7 +32,7 @@ int main() {
         loop->runInLoop(std::bind(print, loop));
         CurrentThread::sleepUsec(500 * 1000);
     }
-
+    printf("\n ------------------- \n");
     {
         // quit() before dtor
         EventLoopThread thr3;
