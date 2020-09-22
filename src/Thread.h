@@ -1,6 +1,7 @@
 #ifndef EVENT_THREAD_H
 #define EVENT_THREAD_H
 
+
 #include <Types.h>
 #include <functional>
 #include <memory>
@@ -9,6 +10,7 @@
 #include <unistd.h>
 #include <boost/noncopyable.hpp>
 
+#include "Atomic.h"
 #include "CountDownLatch.h"
 
 class Thread: boost::noncopyable
@@ -24,6 +26,7 @@ class Thread: boost::noncopyable
         ThreadFunc func_;
         string name_;
         CountDownLatch latch_;
+        static AtomicInt32 numCreated_;
 
     public:
 
@@ -48,6 +51,12 @@ class Thread: boost::noncopyable
         {
             return name_;
         }
+
+        static int numCreated()
+        {
+            return numCreated_.get();
+        }
+
     private:
         void setDefaultName();
 };

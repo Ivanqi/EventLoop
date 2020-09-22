@@ -83,6 +83,8 @@ void *startThread(void *obj)
     return NULL;
 }
 
+AtomicInt32 Thread::numCreated_;
+
 Thread::Thread(const ThreadFunc &func, const std::string &n)
     :started_(false),
     joined_(false),
@@ -104,9 +106,10 @@ Thread::~Thread()
 
 void Thread::setDefaultName()
 {
+    int num = numCreated_.incrementAndGet();
     if (name_.empty()) {
         char buf[32];
-        snprintf(buf, sizeof(buf), "Thread");
+        snprintf(buf, sizeof(buf), "Thread%d", num);
         name_ = buf;
     }
 }
