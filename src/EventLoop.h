@@ -122,7 +122,7 @@ class EventLoop
          * 每隔间隔秒运行一次回调
          * 从其他线程调用是安全的
          */
-        TimerId runEveny(double interval, TimerCallback cb);
+        TimerId runEvery(double interval, TimerCallback cb);
 
         /**
          * 取消计时器

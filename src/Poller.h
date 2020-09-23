@@ -9,7 +9,7 @@
 
 class Channel;
 
-// IO复用基础类
+// IO multiplexing 的封装
 class Poller
 {
     public:
@@ -34,14 +34,14 @@ class Poller
         virtual Timestamp poll(int timeoutMs, ChannelList* activeChannels) = 0;
 
         /**
-         * 更改关系的I/O事件
-         * 必须在循环线程中调用
+         * 负责维护和更新事件列表
          */
         virtual void updateChannel(Channel *channel) = 0;
 
         /**
-         * 当通道被破坏时，移除它
-         * 必须在循环线程中调用
+         * 
+         * Poller并不拥有Channel, Channel在析构之前必须自己unregister(EventLoop::removeChannel())
+         * 避免空悬指针
          */
         virtual void removeChannel(Channel *channel) = 0;
 

@@ -38,11 +38,19 @@ class IgnoreSigPipe
 
 IgnoreSigPipe initObj;
 
+/**
+ * 每个线程至多有一个EventLoop对象，那么使用getEventLoopOfCurrentThread返回这个对象
+ * 如果当前线程不是IO线程，返回值为NULL
+ */
 EventLoop* EventLoop::getEventLoopOfCurrentThread()
 {
     return t_loopInThisThread;   
 }
 
+/**
+ * EventLoop的构造函数会记住本对象所属的线程(threadId_)
+ * 创建了EventLoop对象的线程是IO线程，其主要功能是运行事件循环
+ */
 EventLoop::EventLoop()
     : looping_(false), quit_(false), eventHandling_(false), iteration_(0),
     threadId_(CurrentThread::tid()), poller_(Poller::newDefaultPoller(this)),
@@ -135,23 +143,27 @@ size_t EventLoop::queueSize() const
     return pendingFunctors_.size();
 }
 
+// 在指定的时间调用TimerCallback
 TimerId EventLoop::runAt(Timestamp time, TimerCallback cb)
 {
     return timerQueue_->addTimer(std::move(cb), time, 0.0);
 }
 
+// 等一段时间调用TimerCallback
 TimerId EventLoop::runAfter(double delay, TimerCallback cb)
 {
     Timestamp time(addTime(Timestamp::now(), delay));
     return runAt(time, std::move(cb));
 }
 
-TimerId EventLoop::runEveny(double interval, TimerCallback cb)
+// 以固定的间隔反复调用TimerCallback
+TimerId EventLoop::runEvery(double interval, TimerCallback cb)
 {
     Timestamp time(addTime(Timestamp::now(), interval));
     return timerQueue_->addTimer(std::move(cb), time, interval);
 }
 
+// 取消timer
 void EventLoop::cancel(TimerId timerId)
 {
     return timerQueue_->cancel(timerId);

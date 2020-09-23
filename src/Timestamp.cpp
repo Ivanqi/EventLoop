@@ -38,6 +38,7 @@ string Timestamp::toFormattedString(bool showMicroseconds) const
 Timestamp Timestamp::now()
 {
     struct timeval tv;
+    // 在 x86-64平台上，gettimeofday(2)不是系统调用，而是在用户态实现的，没有上下文切换和陷入内核的开销
     gettimeofday(&tv, NULL);
     int64_t seconds = tv.tv_sec;
     return Timestamp(seconds * kMicroSecondsPerSecond + tv.tv_usec);

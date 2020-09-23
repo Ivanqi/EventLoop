@@ -11,7 +11,7 @@ class PollPoller: public Poller
 {
     private:
         typedef std::vector<struct pollfd> PollFdList;
-        PollFdList pollfds_;
+        PollFdList pollfds_;    // 存储 poll的事件
 
     public:
         PollPoller(EventLoop *loop);

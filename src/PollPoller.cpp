@@ -39,7 +39,8 @@ Timestamp PollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 
 void PollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const
 {
-    // 遍历所有的文件描述符
+    // 遍历所有的文件描述符，O(N)
+    // 为了提前结束循环，每找到一个活动fd就递减numEvents，这样当numEvents减为0时表示活动fd都找完了
     for (PollFdList::const_iterator pfd = pollfds_.begin(); pfd != pollfds_.end() && numEvents > 0; ++pfd) {
         // pfd->revents > 0，一般包含, POLLIN, POLLPRI, POLLOUT, POLLRDHUP, POLLERR, POLLHUP
         if (pfd->revents > 0) {
@@ -58,7 +59,7 @@ void PollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) 
     }
 }
 
-// 新增或修改poll 事件
+// 新增或修改poll 事件。添加新Channel O(logN)，更新已有的ChannelO(1)
 void PollPoller::updateChannel(Channel *channel)
 {
     Poller::assertInLoopThread();
@@ -99,7 +100,7 @@ void PollPoller::updateChannel(Channel *channel)
         pfd.revents = 0;
 
         if (channel->isNoneEvent()) {
-            // 忽略此pollfd
+            // 如果某个Channel暂时不关心任何事件，就把pollfd.fd设置为，-channel->fd() - 1 然后poll忽略此项
             pfd.fd = -channel->fd() - 1;
         }
     }

@@ -16,13 +16,20 @@ class TimerId;
 /**
  * 最大努力计时器队列
  * 不能保证回调会准时
+ * 
+ * 采用平衡二叉树来管理未到期的timers,因此这些操作的时间复杂度O(logN)
+ * 
+ * 在非阻塞服务端编程中，绝对不能用sleep()或类似的办法让程序原地停留等待，这回让程序失去响应
+ * 因为主事件循环被挂起了，无法处理IO事件
+ * 
+ * 对于定时任务，把它变成一个特定的消息，到时候触发相应的消息处理函数
+ * 
+ * TimerQueue的成员函数只能在其所属的IO线程调用，因此不必加锁
  */
 class TimerQueue
 {
     private:
-        /**
-         * 使用unique_ptr<Timer>而不是原始指针
-         */
+        // pair<Timestamp, Timer*>为key，这样即便两个Timer的到期时间相同，它们的地址也必定不同
         typedef std::pair<Timestamp, Timer*> Entry;
         typedef std::set<Entry> TimerList;
         typedef std::pair<Timer*, int64_t> ActiveTimer;
@@ -32,6 +39,7 @@ class TimerQueue
 
         const int timerfd_;
 
+        // 使用Channel来观察timerfd_上的readable时间
         Channel timerfdChannel_;
 
         // 按过期排序的计时器列表

@@ -145,14 +145,20 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
     assert(timers_.size() == activeTimers_.size());
     std::vector<Entry> expired;
 
+    // 当Timestamp相等时会比较Timer*
+    // https://www.zhihu.com/question/274643064
     Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
 
+    // lower_bound()返回的是第一个大于等于x的迭代器
     TimerList::iterator end = timers_.lower_bound(sentry);
     assert(end == timers_.end() || now < end->first);
 
+    // 拷贝 begin 到 end 的数据到 expired 的末尾
     std::copy(timers_.begin(), end, back_inserter(expired));
+    // 删除过期的数据
     timers_.erase(timers_.begin(), end);
 
+    // 在 activeTimers_ 中删除数据
     for (const Entry& it : expired) {
         ActiveTimer timer(it.second, it.second->sequence());
         size_t n = activeTimers_.erase(timer);

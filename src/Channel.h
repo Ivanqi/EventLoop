@@ -13,6 +13,12 @@ class EventLoop;
  * 此类不拥有文件描述符
  * 文件描述符可以是套接字
  * 事件FD，定时器FD或者信号FD
+ * 
+ * 每个Channel对象自始自终只属于一个EventLoop，因此每个Channel对象都只属于一个IO线程
+ * 每个Channel对象自始自终只负责一个文件描述符(fd)的IO事件分发，但它并不拥有这个fd，也不会在析构的时候关闭这个fd
+ * 
+ * Channel会把不同的IO事件分发为不同的回调，例如ReadCallback, WriteCallback等，且回调用std::bind表示，用户无须继承Channel, Channel不是基类
+ * 
  */
 class Channel
 {
@@ -21,7 +27,7 @@ class Channel
         typedef std::function<void(Timestamp)> ReadEventCallback;
 
     private:
-
+        // Channel的成员函数都只能在IO线程调用，因此更新数据成员都不必加锁
         static const int kNoneEvent;
 
         static const int kReadEvent;
