@@ -8,12 +8,12 @@
 class Timer
 {
     private:
-        const TimerCallback callback_;
-        Timestamp expiration_;
-        const double interval_;
-        const bool repeat_;
-        const int64_t sequence_;
-        static AtomicInt64 s_numCreated_;
+        const TimerCallback callback_;      // 回调函数
+        Timestamp expiration_;              // 有效时间
+        const double interval_;             // 间隔时间
+        const bool repeat_;                 // interval > 0.0， 是否存在定时任务
+        const int64_t sequence_;            // 获取序列号
+        static AtomicInt64 s_numCreated_;   // 原子操作
     
     public:
         Timer(TimerCallback cb, Timestamp when, double interval)

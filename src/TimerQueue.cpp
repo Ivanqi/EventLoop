@@ -9,6 +9,11 @@
 
 int createTimerfd()
 {
+    /**
+     * CLOCK_MONOTONIC：从系统启动这一刻起开始计时,不受系统时间被用户改变的影响
+     * TFD_NONBLOCK：非阻塞模式
+     * TFD_CLOEXEC：表示当程序执行exec函数时本fd将被系统自动关闭,表示不传递
+     */
     int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (timerfd < 0) {
         printf("Failed in timerfd_create\n");
@@ -31,9 +36,11 @@ struct timespec howMuchTimeFromNow(Timestamp when)
     return ts;
 }
 
+// 使用epoll监听timer_fd，定时时间到后必须读timerd，不然会一直存在epoll事件，因为timerfd可读
 void readTimerfd(int timerfd, Timestamp now)
 {
     uint64_t howmany;
+    // timerfd读出来的值一般是1，表示超时次数
     ssize_t n = ::read(timerfd, &howmany, sizeof(howmany));
 
     if (n != sizeof(howmany)) {
@@ -50,6 +57,20 @@ void resetTimerfd(int timerfd, Timestamp expiration)
 
     newValue.it_value = howMuchTimeFromNow(expiration);
 
+    /**
+     * int timerfd_settime(int fd, int flags, const struct itimerspec *new_value, struct itimerspec *old_value)
+     * 
+     * flags:
+     *  0: 相对时间
+     *  1: 绝对时间(TFD_TIMER_ABSTIME)
+     * 
+     * new_value：定时器的超时时间以及超时间隔时间
+     * 
+     * old_value：如果不为NULL, old_vlaue返回之前定时器设置的超时时间，具体参考timerfd_gettime()函数
+     * 
+     * 如果flags设置为1，那么epoll监听立马就有事件可读，并且读出的timerfd不是1，因为开机已经过去了很久
+     * 如果设置为0，那么会按照设定的时间定第一个定时器，到时后读出的超时次数是1
+     */
     int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
     if (!ret) {
         printf("timerfd_settime() error");
@@ -57,19 +78,21 @@ void resetTimerfd(int timerfd, Timestamp expiration)
 }
 
 TimerQueue::TimerQueue(EventLoop *loop)
-    : loop_(loop), timerfd_(createTimerfd()), 
-    timerfdChannel_(loop, timerfd_), timers_(), callingExpiredTimers_(false)
+    : loop_(loop), timerfd_(createTimerfd()),  timerfdChannel_(loop, timerfd_), 
+    timers_(), callingExpiredTimers_(false)
 {
-    timerfdChannel_.setReadCallback(
-        std::bind(&TimerQueue::handleRead, this));
-    
+    // 设置回调函数
+    timerfdChannel_.setReadCallback(std::bind(&TimerQueue::handleRead, this));
+    // 加入EventLoop的事件列表中
     timerfdChannel_.enableReading();
 }
 
 TimerQueue::~TimerQueue()
 {
+    // 删除EventLoop的事件列表里的事件
     timerfdChannel_.disableAll();
     timerfdChannel_.remove();
+    
     ::close(timerfd_);
 
     for (const Entry& timer: timers_) {
@@ -103,6 +126,8 @@ void TimerQueue::cancelInLoop(TimerId timerId)
 {
     loop_->assertInLoopThread();
     assert(timers_.size() == activeTimers_.size());
+
+    // 寻找活跃的定时器
     ActiveTimer timer(timerId.timer_, timerId.sequence_);
     ActiveTimerSet::iterator it = activeTimers_.find(timer);
 
@@ -123,8 +148,10 @@ void TimerQueue::handleRead()
 {
     loop_->assertInLoopThread();
     Timestamp now(Timestamp::now());
+    // 事件读取。不然事件就会堆积
     readTimerfd(timerfd_, now);
 
+    // 获取过期的事件
     std::vector<Entry> expired = getExpired(now);
 
     callingExpiredTimers_ = true;
@@ -140,6 +167,7 @@ void TimerQueue::handleRead()
     reset(expired, now);
 }
 
+// 获取过期事件
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
 {
     assert(timers_.size() == activeTimers_.size());
@@ -170,12 +198,14 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
     return expired;
 }
 
+// 对于一些定时任务，重新加入时间队列中
 void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
 {
     Timestamp nextExpire;
 
     for (const Entry &it : expired) {
         ActiveTimer timer(it.second, it.second->sequence());
+        // 存在定时任务，且不在取消队列中
         if (it.second->repeat() && cancelingTimers_.find(timer) == cancelingTimers_.end()) {
             it.second->restart(now);
             insert(it.second);
