@@ -31,7 +31,7 @@ struct timespec howMuchTimeFromNow(Timestamp when)
 
     struct timespec ts;
     ts.tv_sec = static_cast<time_t> (microseconds / Timestamp::kMicroSecondsPerSecond);
-    ts.tv_nsec = static_cast<long> (microseconds % Timestamp::kMicroSecondsPerSecond) * 1000;
+    ts.tv_nsec = static_cast<long> ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000);
 
     return ts;
 }
@@ -72,8 +72,8 @@ void resetTimerfd(int timerfd, Timestamp expiration)
      * 如果设置为0，那么会按照设定的时间定第一个定时器，到时后读出的超时次数是1
      */
     int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
-    if (!ret) {
-        printf("timerfd_settime() error");
+    if (ret < 0) {
+        printf("timerfd_settime() error\n");
     }
 }
 
@@ -81,6 +81,7 @@ TimerQueue::TimerQueue(EventLoop *loop)
     : loop_(loop), timerfd_(createTimerfd()),  timerfdChannel_(loop, timerfd_), 
     timers_(), callingExpiredTimers_(false)
 {
+    printf("timerfd_:%d\n", timerfd_);
     // 设置回调函数
     timerfdChannel_.setReadCallback(std::bind(&TimerQueue::handleRead, this));
     // 加入EventLoop的事件列表中
@@ -92,7 +93,7 @@ TimerQueue::~TimerQueue()
     // 删除EventLoop的事件列表里的事件
     timerfdChannel_.disableAll();
     timerfdChannel_.remove();
-    
+
     ::close(timerfd_);
 
     for (const Entry& timer: timers_) {
@@ -100,6 +101,7 @@ TimerQueue::~TimerQueue()
     }
 }
 
+// 增加定时事件
 TimerId TimerQueue::addTimer(TimerCallback cb, Timestamp when, double interval)
 {
     Timer *timer = new Timer(std::move(cb), when, interval);
@@ -116,7 +118,6 @@ void TimerQueue::addTimerInLoop(Timer* timer)
 {
     loop_->assertInLoopThread();
     bool earliestChanged = insert(timer);
-
     if (earliestChanged) {
         resetTimerfd(timerfd_, timer->expiration());
     }
@@ -146,6 +147,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
 
 void TimerQueue::handleRead()
 {
+    printf("定时器事件数量: %d\n", (int)timers_.size());
     loop_->assertInLoopThread();
     Timestamp now(Timestamp::now());
     // 事件读取。不然事件就会堆积
@@ -156,7 +158,6 @@ void TimerQueue::handleRead()
 
     callingExpiredTimers_ = true;
     cancelingTimers_.clear();
-
     // 可以安全地在关键区域外回调
     for (const Entry& it : expired) {
         it.second->run();

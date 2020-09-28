@@ -38,7 +38,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 {
     printf("fd total count %zu\n", channels_.size());
 
-    int numEvents = ::epoll_wait(epollfd_, &*events_.begin(), static_cast<int>(events_.size()), timeoutMs);
+    int numEvents = ::epoll_wait(epollfd_,  &*events_.begin(), static_cast<int>(events_.size()), timeoutMs);
 
     int savedErrno = errno;
 
@@ -48,6 +48,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
         printf("%d events happened\n", numEvents);
         fillActiveChannels(numEvents, activeChannels);
 
+        // 扩容
         if (implicit_cast<size_t>(numEvents) == events_.size()) {
             events_.resize(events_.size() * 2);
         }

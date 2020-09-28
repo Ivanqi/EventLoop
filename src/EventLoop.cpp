@@ -57,6 +57,7 @@ EventLoop::EventLoop()
     timerQueue_(new TimerQueue(this)), wakeupFd_(createEventfd()),
     wakeupChannel_(new Channel(this, wakeupFd_)), currentActiveChannel_(NULL)
 {
+    printf("wakeupFd_:%d\n", wakeupFd_);
     if (t_loopInThisThread) {
         printf("t_loopInThisThread is not null, exists in this thread: %d\n", threadId_);
     } else {
@@ -88,7 +89,6 @@ void EventLoop::loop()
         // 监听文件描述符注册的事件
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
         ++iteration_;
-
         eventHandling_ = true;
         for (Channel *channel: activeChannels_) {
             currentActiveChannel_ = channel;
