@@ -147,7 +147,6 @@ void TimerQueue::cancelInLoop(TimerId timerId)
 
 void TimerQueue::handleRead()
 {
-    printf("定时器事件数量: %d\n", (int)timers_.size());
     loop_->assertInLoopThread();
     Timestamp now(Timestamp::now());
     // 事件读取。不然事件就会堆积

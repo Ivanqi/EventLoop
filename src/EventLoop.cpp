@@ -97,6 +97,7 @@ void EventLoop::loop()
 
         currentActiveChannel_ = NULL;
         eventHandling_ = false;
+        // 队列事件触发
         doPendingFunctors();
     }
 
