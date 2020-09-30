@@ -6,6 +6,8 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <iostream>
 
 int createTimerfd()
 {
@@ -30,6 +32,7 @@ struct timespec howMuchTimeFromNow(Timestamp when)
     }
 
     struct timespec ts;
+    std::cout << "howMuchTimeFromNow: " << microseconds / Timestamp::kMicroSecondsPerSecond << " | " << ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000) << std::endl;
     ts.tv_sec = static_cast<time_t> (microseconds / Timestamp::kMicroSecondsPerSecond);
     ts.tv_nsec = static_cast<long> ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000);
 
@@ -72,8 +75,8 @@ void resetTimerfd(int timerfd, Timestamp expiration)
      * 如果设置为0，那么会按照设定的时间定第一个定时器，到时后读出的超时次数是1
      */
     int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
-    if (ret < 0) {
-        printf("timerfd_settime() error\n");
+    if (ret) {
+        printf("timerfd_settime() Error:[%d:%s]\n", errno, strerror(errno));
     }
 }
 
@@ -183,6 +186,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
 
     // 拷贝 begin 到 end 的数据到 expired 的末尾
     std::copy(timers_.begin(), end, back_inserter(expired));
+    
     // 删除过期的数据
     timers_.erase(timers_.begin(), end);
 
@@ -231,7 +235,6 @@ bool TimerQueue::insert(Timer *timer)
 
     Timestamp when = timer->expiration();
     TimerList::iterator it = timers_.begin();
-
     if (it == timers_.end() || when < it->first) {
         earliestChanged = true;
     }

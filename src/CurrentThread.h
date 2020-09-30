@@ -1,5 +1,5 @@
-#ifndef LOGGER_CURRENTTHREAD_H
-#define LOGGER_CURRENTTHREAD_H
+#ifndef EVENT_CURRENTTHREAD_H
+#define EVENT_CURRENTTHREAD_H
 
 #include "Types.h"
 #include <stdint.h>
