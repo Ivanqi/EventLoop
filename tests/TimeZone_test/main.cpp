@@ -144,8 +144,129 @@ void testNewYork() {
     }
 }
 
+void testLondon() {
+
+    TimeZone tz("/usr/share/zoneinfo/Europe/London");
+    TestCase cases[] = {
+        { "2011-03-26 00:00:00", "2011-03-26 00:00:00+0000(GMT)", false },
+        { "2011-03-27 00:59:59", "2011-03-27 00:59:59+0000(GMT)", false },
+        { "2011-03-27 01:00:00", "2011-03-27 02:00:00+0100(BST)", true },
+        { "2011-10-30 00:59:59", "2011-10-30 01:59:59+0100(BST)", true },
+        { "2011-10-30 01:00:00", "2011-10-30 01:00:00+0000(GMT)", false },
+        { "2012-10-30 01:59:59", "2012-10-30 01:59:59+0000(GMT)", false },
+        { "2011-12-31 22:00:00", "2011-12-31 22:00:00+0000(GMT)", false },
+        { "2012-01-01 00:00:00", "2012-01-01 00:00:00+0000(GMT)", false },
+
+        { "2012-03-24 00:00:00", "2012-03-24 00:00:00+0000(GMT)", false },
+        { "2012-03-25 00:59:59", "2012-03-25 00:59:59+0000(GMT)", false },
+        { "2012-03-25 01:00:00", "2012-03-25 02:00:00+0100(BST)", true },
+        { "2012-10-28 00:59:59", "2012-10-28 01:59:59+0100(BST)", true },
+        { "2012-10-28 01:00:00", "2012-10-28 01:00:00+0000(GMT)", false },
+        { "2012-10-28 01:59:59", "2012-10-28 01:59:59+0000(GMT)", false },
+        { "2012-12-31 22:00:00", "2012-12-31 22:00:00+0000(GMT)", false },
+        { "2013-01-01 00:00:00", "2013-01-01 00:00:00+0000(GMT)", false },
+    };
+
+    for (const auto& c: cases) {
+        test(tz, c);
+    }
+}
+
+void testHongKong() {
+
+    TimeZone tz("/usr/share/zoneinfo/Asia/Hong_Kong");
+    TestCase cases[] = {
+        { "2011-04-03 00:00:00", "2011-04-03 08:00:00+0800(HKT)", false},
+    };
+
+    for (const auto& c: cases) {
+        test(tz, c);
+    }
+}
+
+void testSydney() {
+
+    TimeZone tz("/usr/share/zoneinfo/Asia/Sydney");
+
+    TestCase cases[] = {
+        { "2011-01-01 00:00:00", "2011-01-01 11:00:00+1100(EST)", true },
+        { "2011-04-02 15:59:59", "2011-04-03 02:59:59+1100(EST)", true },
+        { "2011-04-02 16:00:00", "2011-04-03 02:00:00+1000(EST)", false },
+        { "2011-04-02 16:59:59", "2011-04-03 02:59:59+1000(EST)", false },
+        { "2011-05-02 01:00:00", "2011-05-02 11:00:00+1000(EST)", false },
+        { "2011-10-01 15:59:59", "2011-10-02 01:59:59+1000(EST)", false },
+        { "2011-10-01 16:00:00", "2011-10-02 03:00:00+1100(EST)", true },
+        { "2011-12-31 22:00:00", "2012-01-01 09:00:00+1100(EST)", true },
+    };
+
+    for (const auto& c : cases) {
+        test(tz, c);
+    }
+}
+
+void testSydeey() {
+
+    TimeZone tz("/usr/share/zoneinfo/Australia/Sydney");
+    TestCase cases[] = {
+        { "2011-01-01 00:00:00", "2011-01-01 11:00:00+1100(EST)", true },
+        { "2011-04-02 15:59:59", "2011-04-03 02:59:59+1100(EST)", true },
+        { "2011-04-02 16:00:00", "2011-04-03 02:00:00+1000(EST)", false },
+        { "2011-04-02 16:59:59", "2011-04-03 02:59:59+1000(EST)", false },
+        { "2011-05-02 01:00:00", "2011-05-02 11:00:00+1000(EST)", false },
+        { "2011-10-01 15:59:59", "2011-10-02 01:59:59+1000(EST)", false },
+        { "2011-10-01 16:00:00", "2011-10-02 03:00:00+1100(EST)", true },
+        { "2011-12-31 22:00:00", "2012-01-01 09:00:00+1100(EST)", true },
+    };
+
+    for (const auto& c: cases) {
+        test(tz, c);
+    }
+}
+
+void testUtc() {
+
+    const int kRange = 100 * 1000 * 1000;
+    for (time_t t = -kRange; t <= kRange; t += 11) {
+        struct tm* t1 = gmtime(&t);
+        struct tm t2 = TimeZone::toUtcTime(t, true);
+        char buf1[80], buf2[80];
+        strftime(buf1, sizeof buf1, "%F %T %u %j", t1);
+        strftime(buf2, sizeof buf2, "%F %T %u %j", &t2);
+
+        if (strcmp(buf1, buf2) != 0) {
+            printf("'%s' != '%s'\n", buf1, buf2);
+            assert(0);
+        }
+
+        time_t t3 = TimeZone::fromUtcTime(t2);
+
+        if (t != t3) {
+            printf("%ld != %ld\n", static_cast<long>(t), static_cast<long>(t3));
+            assert(0);
+        }
+    }
+}
+
+void testFixedTimezone() {
+
+    TimeZone tz(8*3600, "CST");
+    TestCase cases[] = {
+        { "2014-04-03 00:00:00", "2014-04-03 08:00:00+0800(CST)", false},
+    };
+
+    for (const auto& c: cases) {
+        test(tz, c);
+    }
+}
+
 int main() {
 
     testNewYork();
+    testLondon();
+    testSydney();
+    testHongKong();
+    testFixedTimezone();
+    testUtc();
+
     return 0;
 }
