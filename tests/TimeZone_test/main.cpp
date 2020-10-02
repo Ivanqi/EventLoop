@@ -47,7 +47,6 @@ struct TestCase {
 void test(const TimeZone& tz, TestCase tc) {
 
     time_t gmt = getGmt(tc.gmt);
-
     {
         struct tm local = tz.toLocalTime(gmt);
         char buf[256];
@@ -186,7 +185,7 @@ void testHongKong() {
 
 void testSydney() {
 
-    TimeZone tz("/usr/share/zoneinfo/Asia/Sydney");
+    TimeZone tz("/usr/share/zoneinfo/Australia/Sydney");
 
     TestCase cases[] = {
         { "2011-01-01 00:00:00", "2011-01-01 11:00:00+1100(EST)", true },
@@ -259,13 +258,44 @@ void testFixedTimezone() {
     }
 }
 
+/**
+ * 时区说明
+ *  EST (Eastern Standard Time) ：东部(美国)标准时间
+ *  EDT (Eastern Daylight Time) : 东部(美国)夏时令时间
+ *  ET (Eastern Time): 东部(美国)时间
+ *  GMT (Greenwich Mean Time): 格林尼治标准时间
+ *  BST (British Summer Time): 英国夏令时间
+ *  AEDT (Australian Eastern Daylight Time): 澳大利亚东部夏令时
+ *  AEST (Australian Eastern Standard Time): AEST表示澳大利亚东部标准时间
+ *  CST (China Standard Tim): 中国标准时间
+ *  UTC (Coordinated Universal Time): 协调世界时, 是最主要的世界时间标准. UTC 是一个标准，而不是一个时区
+ * 
+ * 时区转换
+ *  EDT 比 GMT 时间慢5个小时,即EDT = GMT - 5
+ *  EST 比 GMT 时间慢4个小时,即EST = GMT - 4
+ *  北京时区比 GMT 快 8个小时，即北京时区 = GMT + 8
+ *  EDT 比北京慢 13 个小时，即 EDT = 北京时间 - 13
+ *  EST 比 北京时间慢 12 个小时， 即 EST = 北京时间  - 12
+ * 
+ *  BST 比 GMT 快一个小时, 即 BST = GMT + 1
+ *  AEDT = GMT + 11
+ *  AEST = GMT + 10
+ *  CST = GMT + 8
+ */
+
 int main() {
 
+    printf("\n-------- NewYork --------- \n");
     testNewYork();
+    printf("\n-------- LonDon --------- \n");
     testLondon();
+    printf("\n-------- Sydney --------- \n");
     testSydney();
+    printf("\n-------- Hongkong --------- \n");
     testHongKong();
+    printf("\n-------- CST --------- \n");
     testFixedTimezone();
+    printf("\n-------- UTC --------- \n");
     testUtc();
 
     return 0;
