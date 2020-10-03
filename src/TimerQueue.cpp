@@ -32,7 +32,6 @@ struct timespec howMuchTimeFromNow(Timestamp when)
     }
 
     struct timespec ts;
-    std::cout << "howMuchTimeFromNow: " << microseconds / Timestamp::kMicroSecondsPerSecond << " | " << ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000) << std::endl;
     ts.tv_sec = static_cast<time_t> (microseconds / Timestamp::kMicroSecondsPerSecond);
     ts.tv_nsec = static_cast<long> ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000);
 
@@ -84,7 +83,6 @@ TimerQueue::TimerQueue(EventLoop *loop)
     : loop_(loop), timerfd_(createTimerfd()),  timerfdChannel_(loop, timerfd_), 
     timers_(), callingExpiredTimers_(false)
 {
-    printf("timerfd_:%d\n", timerfd_);
     // 设置回调函数
     timerfdChannel_.setReadCallback(std::bind(&TimerQueue::handleRead, this));
     // 加入EventLoop的事件列表中
@@ -154,7 +152,6 @@ void TimerQueue::handleRead()
     Timestamp now(Timestamp::now());
     // 事件读取。不然事件就会堆积
     readTimerfd(timerfd_, now);
-
     // 获取过期的事件
     std::vector<Entry> expired = getExpired(now);
 
@@ -235,7 +232,8 @@ bool TimerQueue::insert(Timer *timer)
 
     Timestamp when = timer->expiration();
     TimerList::iterator it = timers_.begin();
-    if (it == timers_.end() || when < it->first) {
+    
+    if (it == timers_.end() || when.microSecondsSinceEpoch() > it->first.microSecondsSinceEpoch()) {
         earliestChanged = true;
     }
 
