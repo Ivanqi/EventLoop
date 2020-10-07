@@ -7,7 +7,7 @@ struct tcp_info;
 class InetAddress;
 
 /**
- * 套接字文件描述符的包装
+ * 套接字文件描述符的包装. RAII handle，封装了socket文件描述符的生命期
  * 
  * 停止时关闭sockfd
  * 它是线程安全的，所有操作都是通过操作系统来完成的

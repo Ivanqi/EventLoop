@@ -94,6 +94,12 @@ void TcpServer::removeConnection(const TcpConnectionPtr& conn)
     loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop, this, conn));
 }
 
+/**
+ * TcpServer::removeConnection() 把conn从ConnectionMap中移除
+ * 这时TcpConnection已经是命悬一线，如果用户不持有TcpConnectionPtr的话，conn的引用计数已降到1
+ * 这里一定要用 EventLoop::queueInLoop(), 否则就会出现生命周期管理问题
+ * 另外注意这里用 std::bind 让TcpConnection的生命期长到调用connectDestoryed()的时刻
+ */
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
 {
     loop_->assertInLoopThread();
@@ -102,6 +108,5 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
     assert(n == 1);
     EventLoop* ioLoop = conn->getLoop();
 
-     ioLoop->queueInLoop(
-      std::bind(&TcpConnection::connectDestroyed, conn));
+    ioLoop->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
 }

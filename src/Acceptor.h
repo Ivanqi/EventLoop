@@ -19,8 +19,8 @@ class Acceptor
 
     private:
         EventLoop *loop_;
-        Socket acceptSocket_;
-        Channel acceptChannel_;
+        Socket acceptSocket_;   // RAII handle，封装了socket文件描述符的生命期
+        Channel acceptChannel_; // channel用于观察次socket上的readable事件，并回调Acceptor::handleRead()
         NewConnectionCallback newConnectionCallback_;
         bool listenning_;
         int idleFd_;

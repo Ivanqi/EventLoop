@@ -38,13 +38,18 @@ void Acceptor::listen()
     acceptChannel_.enableReading();
 }
 
-// 接受客户端的连接
+// 接受客户端的连接，并回调用户callback
 void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();
     InetAddress peerAddr;
 
     int connfd = acceptSocket_.accept(&peerAddr);
+    /*
+        这里没有考虑了文件描述符耗尽的情况，在拿到大于等于0的connfd之后，非阻塞poll(2)一下，看fd是否可读写
+        正常情况下poll(2)会返回writeable，表明connfd可用
+        如果poll(2)返回错误，表明connfd有问题，应该立刻关闭连接
+     */
     if (connfd >= 0) {
         if (newConnectionCallback_) {
             newConnectionCallback_(connfd, peerAddr);

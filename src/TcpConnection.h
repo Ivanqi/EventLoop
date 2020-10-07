@@ -20,6 +20,9 @@ class Socket;
 
 /**
  * TCP连接，用于客户端和服务器
+ * TcpConnection 表示的是“一次TCP连接”，它是不可再生的，一旦连接断开，这个TcpConnection对象就没啥用来
+ * 另外TcpConnection没有发起连接的功能，其构造函数的参数是已经建立好连接的sock fd(无论是TcpServer被动接受还是TcpClient主动发起)
+ * 因此其初始状态是kConnecting
  */
 class TcpConnection: boost::noncopyable, public std::enable_shared_from_this<TcpConnection>
 {
@@ -153,7 +156,10 @@ class TcpConnection: boost::noncopyable, public std::enable_shared_from_this<Tcp
             return &outputBuffer_;
         }
 
-        // 仅供内部使用
+        /**
+         * TcpConnection class 也新增了CloseCallback事件回调，但是这个回调是给TcpServer和TcpClient用的
+         * 用于通知它们移除所持有的TcpConnectionPtr，这不是给普通用户用的，普通用户继续使用ConnectionCallback
+         */
         void setCloseCallback(const CloseCallback& cb)
         {
             closeCallback_ = cb;

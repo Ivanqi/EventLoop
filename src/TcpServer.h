@@ -25,6 +25,12 @@ class TcpServer: boost::noncopyable
         };
 
     private:
+        /*
+            TcpServer持有目前存活的TcpConnection的shared_ptr(定义为TcpConnectionPtr)
+            因为TcpConnection 对象的生命期是模糊的，用户也可以持有TcpConnectionPtr
+
+            每个TcpConnection对象有一个名字，这个名字是由其所属的TcpServer在创建TcpConnection对象时生成的，名字为ConectionMap的key
+         */
         typedef std::map<string, TcpConnectionPtr> ConectionMap;
 
         EventLoop* loop_;   // the acceptor loop
@@ -33,7 +39,7 @@ class TcpServer: boost::noncopyable
 
         const string name_;
 
-        std::unique_ptr<Acceptor> acceptor_;    // 避免暴露Acceptor
+        std::unique_ptr<Acceptor> acceptor_;    // 避免暴露Acceptor， 使用Acceptor来获取新连接的fd
 
         std::shared_ptr<EventLoopThreadPool> threadPool_;
 

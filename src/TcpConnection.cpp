@@ -37,6 +37,7 @@ TcpConnection::TcpConnection(EventLoop *loop, const string& nameArg, int sockfd,
 
 TcpConnection::~TcpConnection()
 {
+    printf("TcpConnection::~TcpConnection::dtor[ %s ] fd= %d state= %s\n", name_.c_str(), channel_->fd(), stateToString());
     assert(state_ == kDisconnected);
 }
 
@@ -236,7 +237,7 @@ void TcpConnection::connectDestroyed()
     channel_->remove();
 }
 
-// 读取对端发送的消息
+// 读取对端发送的消息。 把readable事件通过MessageCallback传达给客户
 void TcpConnection::handleRead(Timestamp receiveTime)
 {
     loop_->assertInLoopThread();
@@ -254,7 +255,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     }
 }
 
-// 往对端写入消息
+// 往对端写入消息.  自己处理writeable事件
 void TcpConnection::handleWrite()
 {
     loop_->assertInLoopThread();
@@ -296,6 +297,7 @@ void TcpConnection::handleClose()
     closeCallback_(guardThis);
 }
 
+// 输出错误信息
 __thread char t_errnobuf[512];
 void TcpConnection::handleError()
 {
