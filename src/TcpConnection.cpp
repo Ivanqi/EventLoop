@@ -54,6 +54,10 @@ void TcpConnection::send(const void *data, int len)
     send(StringPiece(static_cast<const char*>(data), len));
 }
 
+/**
+ * 如果在非IO线程调用，它会把message复制一份，传给IO线程中的sendInLoop()来发送
+ * 这样做或许有轻微的效率损失，但是线程安全性很容易验证
+ */
 void TcpConnection::send(const StringPiece& message)
 {
     if (state_ == kConnected) {
@@ -102,6 +106,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
         nwrote = sockets::write(channel_->fd(), data, len);
         if (nwrote >= 0) {
             remaining = len - nwrote;
+            // 如果全部发送完毕，就触发写入完成的回调
             if (remaining == 0 && writeCompleteCallback_) {
                 loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
             }
@@ -116,13 +121,15 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     }
 
     assert(remaining <= len);
+    // 如果没有全部发送完成
     if (!faultError && remaining > 0) {
         size_t oldLen = outputBuffer_.readableBytes();
+        // 高水位回调
         if (oldLen + remaining >= highWaterMark_ && oldLen < highWaterMark_ && highWaterMarkCallback_) {
             loop_->queueInLoop(std::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
         }
 
-        // 添加到缓冲区
+        // 添加到缓冲区。因为outputBuffer_已经有待发送的数据，那么就不能先尝试发送了，因为这会造成数据乱序
         outputBuffer_.append(static_cast<const char *>(data) + nwrote, remaining);
 
         if (!channel_->isWriting()) {
@@ -255,7 +262,13 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     }
 }
 
-// 往对端写入消息.  自己处理writeable事件
+/**
+ * 往对端写入消息.  自己处理writeable事件
+ * 当socket变得可写时，Channel会调用TcpConnection::handleWrite()，这里会继续发送outputBuffer_中的数据
+ * 一旦发送完毕，立刻停止观察writeable事件，避免busy loop
+ * 另外如果这时连接正在关闭，则调用shutdownInLoop()，继续执行关闭过程
+ * 这里不需要处理错误，因为一旦发生错误，handleRead()会读到0字节，继而关闭连接
+ */
 void TcpConnection::handleWrite()
 {
     loop_->assertInLoopThread();
@@ -275,7 +288,7 @@ void TcpConnection::handleWrite()
                 }
             }
         } else {
-            printf("TcpConnection::handleWrit\n");
+            printf("TcpConnection::handleWrite\n");
         }
     } else{
         printf("Connection fd =  %d is down, no more writing\n", channel_->fd());
