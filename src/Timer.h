@@ -5,6 +5,9 @@
 #include "Timestamp.h"
 #include "Callbacks.h"
 
+/**
+ * 为了区分地址相同的先后两个Timer对象。因此每个Timer对象有一个全局递增的序列号int64_t sequence_
+ */
 class Timer
 {
     private:

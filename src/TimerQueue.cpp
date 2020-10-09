@@ -133,13 +133,17 @@ void TimerQueue::cancelInLoop(TimerId timerId)
     ActiveTimer timer(timerId.timer_, timerId.sequence_);
     ActiveTimerSet::iterator it = activeTimers_.find(timer);
 
+    /**
+     * 由于TimerId不负责Timer的生命期，其中保存的Timer* 可能失效，因此不能直接解引用
+     * 只有在activeTimers_中找到了Timer时才能提领
+     */
     if (it != activeTimers_.end()) {
         size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
         assert(n == 1);
         (void)n;
         delete it->first;
         activeTimers_.erase(it);
-    } else if (callingExpiredTimers_) {
+    } else if (callingExpiredTimers_) { // 自注销
         cancelingTimers_.insert(timer);
     }
 

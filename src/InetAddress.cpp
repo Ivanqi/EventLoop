@@ -103,7 +103,7 @@ bool InetAddress::resolve(StringArg hostname, InetAddress* out)
         return true;
     } else {
         if (ret) {
-            printf("InetAddress::resolve error");
+            printf("InetAddress::resolve error\n");
         }
         return false;
     }

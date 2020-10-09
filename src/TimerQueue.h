@@ -46,6 +46,8 @@ class TimerQueue
         TimerList timers_;
 
         // 取消
+        // 保存的是目前有效的Timer指针，并满足invariant: timers_.size() == activeTimers_.size()，因为这两个容器保存的是相同的数据
+        // 只不过timers_是按到期事件排序，activeTimers_是按对象地址排序
         ActiveTimerSet activeTimers_;
         bool callingExpiredTimers_;     /* atomic */
         ActiveTimerSet cancelingTimers_;
