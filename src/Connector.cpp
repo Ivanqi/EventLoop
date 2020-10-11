@@ -52,6 +52,11 @@ void Connector::stopInLoop()
     }
 }
 
+/**
+ * socket 是一次性的，一旦出错(比如对方拒绝连接)，就无法恢复，只能关闭重来
+ * 但Connector 是可以反复使用的，因此每次尝试连接都要使用新的socket文件描述符和新的Channel对象
+ * 要留意Channel对象的生命期管理，并防止socket文件描述符符泄漏
+ */
 void Connector::connect()
 {
     int sockfd = sockets::createNonblockingOrDie(serverAddr_.family());
@@ -59,6 +64,10 @@ void Connector::connect()
     int savedErrno = (ret == 0) ? 0 : errno;
 
     switch (savedErrno) {
+        /**
+         * '正在连接'的返回码是EINPROGRESS
+         * 另外，即便出现socket可写，也不一定意味着连接已成功建立，还需要用 getsockopt(sockfd, SOL_SOCKET, SO_ERROR, ...)再确定一次
+         */
         case 0:
         case EINPROGRESS:
         case EINTR:
@@ -66,6 +75,9 @@ void Connector::connect()
             connecting(sockfd);
             break;
         
+        /**
+         * EAGAIN是真的错误，表明本机 ephemeral port 暂时用完，关闭socket再延期重试
+         */
         case EAGAIN:
         case EADDRINUSE:
         case EADDRNOTAVAIL:
@@ -179,7 +191,9 @@ void Connector::retry(int sockfd)
 
     if (connect_) {
         printf("Connector::retry -- Retry connecting to %s in %d milliseconds.\n", serverAddr_.toIpPort().c_str(), retryDelayMs_);
-
+        /**
+         * 重试间隔应该应该逐渐延长，例如0.5s, 1s, 2s, 4s,直至30s,即back-off
+         */
         loop_->runAfter(retryDelayMs_ / 1000.0, std::bind(&Connector::startInLoop, shared_from_this()));
 
         retryDelayMs_ = std::min(retryDelayMs_ * 2, kMaxRetryDelayMs);

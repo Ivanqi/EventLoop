@@ -17,7 +17,7 @@ class Connector : boost::noncopyable, public std::enable_shared_from_this<Connec
         typedef std::function<void (int sockfd)> NewConnectionCallback;
     
     private:
-        enum States {kDisconnected, kConnecting, kConnected};
+        enum States {kDisconnected, kConnecting, kConnected};   // 未连接，连接中，已连接
         static const int kMaxRetryDelayMs = 30 * 1000;
         static const int kInitRetryDelayMs = 500;
 
