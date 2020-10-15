@@ -7,6 +7,9 @@
 class Connector;
 typedef std::shared_ptr<Connector> ConnectorPtr;
 
+/**
+ * TcpClient具备TcpConnection断开重连的功能，加上Connector具有反复尝试连接的功能，因此客户端和服务端的启动顺序无关紧要
+ */
 class TcpClient
 {
     private:

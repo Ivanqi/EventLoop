@@ -151,12 +151,34 @@ ssize_t sockets::write(int sockfd, const void *buf, size_t count)
 
 void sockets::close(int sockfd)
 {
-    assert(::close(sockfd) > 0);
+    /**
+     * int close(int fd);
+     * 当使用完文件后若已不再需要则可使用 close()关闭该文件
+     *  close()会让数据写回磁盘, 并释放该文件所占用的资源
+     * 参数fd 为先前由open()或creat()所返回的文件描述词.
+     * 
+     * 返回值
+     *  若文件顺利关闭则返回0
+     *  发生错误时返回-1
+     */
+    assert(::close(sockfd) == 0);
 }
 
 void sockets::shutdownWrite(int sockfd)
 {
-  assert(::shutdown(sockfd, SHUT_WR) > 0);
+    /**
+     * int shutdown(int s, int how);
+     * shutdown()用来终止参数s 所指定的socket 连线. 参数s 是连线中的socket 处理代码
+     * 参数how有下列几种情况
+     *  how=0 终止读取操作.
+     *  how=1 终止传送操作
+     *  how=2 终止读取及传送操作
+     * 
+     * 返回值
+     *  成功则返回0
+     *  失败返回-1
+     */
+    assert(::shutdown(sockfd, SHUT_WR) == 0);
 }
 
 void sockets::toIpPort(char *buf, size_t size, const struct sockaddr* addr)
@@ -192,14 +214,15 @@ void sockets::fromIpPort(const char* ip, uint16_t port, struct sockaddr_in* addr
      * 如果src不包含字符串，则返回0表示指定地址族中的有效网络地址
      * 如果af不包含有效的地址族，则返回-1并errno设置为EAFNOSUPPORT。
      */
-    assert(::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0);
+    int ret = ::inet_pton(AF_INET, ip, &addr->sin_addr);
+    assert(ret == 1);
 }
 
 void sockets::fromIpPort(const char* ip, uint16_t port, struct sockaddr_in6* addr)
 {
     addr->sin6_family = AF_INET6;
     addr->sin6_port = hostToNetwork16(port);
-    assert (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0);
+    assert (::inet_pton(AF_INET6, ip, &addr->sin6_addr) == 1);
 }
 
 int sockets::getSocketError(int sockfd)
@@ -236,7 +259,7 @@ struct sockaddr_in6 sockets::getPeerAddr(int sockfd)
 
     // getpeername() 返回连接到套接字的对端的地址 sockfd，绑定在addr指向的缓冲区中。相当于客户端地址
     // 成功时，返回0。发生错误时，返回-1，错误原因存于errno中。
-    assert(::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) < 0);
+    assert(::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) == 0);
     return peeraddr;
 }
 

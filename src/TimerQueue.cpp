@@ -143,7 +143,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
         (void)n;
         delete it->first;
         activeTimers_.erase(it);
-    } else if (callingExpiredTimers_) { // 自注销
+    } else if (callingExpiredTimers_) { // 自注销。 即在定时回调中注销当前定时器
         cancelingTimers_.insert(timer);
     }
 
