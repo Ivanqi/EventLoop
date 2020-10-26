@@ -161,6 +161,7 @@ void Connector::handleWrite()
 
         } else {
             setState(kConnected);
+            printf("Connector::handleWrite %d complete\n", state_);
             if (connect_) {
                 newConnectionCallback_(sockfd);
             } else {
@@ -168,7 +169,7 @@ void Connector::handleWrite()
             }
         }
     } else {
-        // what heappend?
+        // what happened?
         assert(state_ == kDisconnected);
     }
 }

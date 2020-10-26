@@ -11,7 +11,7 @@
 void defaultConnectionCallback(const TcpConnectionPtr& conn)
 {
     string connectState = conn->connected() ? "UP" : "DOWN";
-    printf("%s -> %s is %s", conn->localAddress().toIpPort().c_str(), conn->peerAddress().toIpPort().c_str(), connectState.c_str());
+    printf("%s -> %s is %s\n", conn->localAddress().toIpPort().c_str(), conn->peerAddress().toIpPort().c_str(), connectState.c_str());
 }
 
 void defaultMessageCallback(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
