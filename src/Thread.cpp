@@ -108,7 +108,10 @@ Thread::Thread(const ThreadFunc &func, const std::string &n)
 
 Thread::~Thread()
 {
+    std::cout << "~Thread" << std::endl;
     if (started_ && !joined_) {
+        // pthread_join()函数的替代函数
+        // pthread_detach 即主线程与子线程分离，子线程结束后，资源自动回收
         pthread_detach(pthreadId_);
     }
 }
@@ -142,5 +145,6 @@ int Thread::join()
     assert(started_);
     assert(!joined_);
     joined_ = true;
+    // pthread_join即是子线程合入主线程，主线程阻塞等待子线程结束，然后回收子线程资源
     return pthread_join(pthreadId_, NULL);
 }
