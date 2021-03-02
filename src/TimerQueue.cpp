@@ -60,8 +60,8 @@ void resetTimerfd(int timerfd, Timestamp expiration)
     memZero(&oldValue, sizeof(oldValue));
 
     newValue.it_value = howMuchTimeFromNow(expiration);
-    std::cout << "resetTimerfd1: " << newValue.it_value.tv_sec << std::endl;
-    std::cout << "resetTimerfd2: " << newValue.it_value.tv_nsec << std::endl;
+    // std::cout << "resetTimerfd1: " << newValue.it_value.tv_sec << std::endl;
+    // std::cout << "resetTimerfd2: " << newValue.it_value.tv_nsec << std::endl;
 
     /**
      * int timerfd_settime(int fd, int flags, const struct itimerspec *new_value, struct itimerspec *old_value)
@@ -242,17 +242,20 @@ bool TimerQueue::insert(Timer *timer)
     Timestamp when = timer->expiration();
     TimerList::iterator it = timers_.begin();
     
+    // 如果timers_为空或者 when的时间大于timers_集合中的第一个元素的时间，意味着when的时间到期得最早，所以earliestChanged为true
     if (it == timers_.end() || when.microSecondsSinceEpoch() > it->first.microSecondsSinceEpoch()) {
         earliestChanged = true;
     }
 
     {
+        // 把when新增到timers_集合中
         std::pair<TimerList::iterator, bool> result = timers_.insert(Entry(when, timer));
         assert(result.second);
         (void)result;
     }
 
     {
+        // 把timer新增到activeTimers_集合中
         std::pair<ActiveTimerSet::iterator, bool> result = activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
         assert(result.second);
         (void)result;
