@@ -25,6 +25,7 @@ int createTimerfd()
 
 struct timespec howMuchTimeFromNow(Timestamp when) 
 {
+    // 有效时间 = when的时间(微秒) - 当前时间(微秒)
     int64_t microseconds = when.microSecondsSinceEpoch() - Timestamp::now().microSecondsSinceEpoch();
 
     if (microseconds < 100) {
@@ -50,6 +51,7 @@ void readTimerfd(int timerfd, Timestamp now)
     }
 }
 
+// struct itimerspec 说明，https://blog.csdn.net/whahu1989/article/details/103722557
 void resetTimerfd(int timerfd, Timestamp expiration)
 {
     struct itimerspec newValue;
@@ -58,6 +60,8 @@ void resetTimerfd(int timerfd, Timestamp expiration)
     memZero(&oldValue, sizeof(oldValue));
 
     newValue.it_value = howMuchTimeFromNow(expiration);
+    std::cout << "resetTimerfd1: " << newValue.it_value.tv_sec << std::endl;
+    std::cout << "resetTimerfd2: " << newValue.it_value.tv_nsec << std::endl;
 
     /**
      * int timerfd_settime(int fd, int flags, const struct itimerspec *new_value, struct itimerspec *old_value)
@@ -115,6 +119,7 @@ void TimerQueue::cancel(TimerId timerId)
     loop_->runInLoop(std::bind(&TimerQueue::cancelInLoop, this, timerId));
 }
 
+// 新增定时事件
 void TimerQueue::addTimerInLoop(Timer* timer)
 {
     loop_->assertInLoopThread();
