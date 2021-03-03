@@ -40,13 +40,14 @@ class TcpConnection: boost::noncopyable, public std::enable_shared_from_this<Tcp
         const InetAddress peerAddr_;    // 对端地址
 
         // 回调函数
-        ConnectionCallback connectionCallback_;
-        MessageCallback messageCallback_;
-        WriteCompleteCallback writeCompleteCallback_;
-        HighWaterMarkCallback highWaterMarkCallback_;
-        CloseCallback closeCallback_;
+        ConnectionCallback connectionCallback_; // 连接回调
+        MessageCallback messageCallback_;       // 信息回调
+        WriteCompleteCallback writeCompleteCallback_;   // 写入完成回调
+        HighWaterMarkCallback highWaterMarkCallback_;   // 高水位回调
+        CloseCallback closeCallback_;           // 关闭回调
         size_t highWaterMark_;
         
+        // 使用buffer作为缓冲
         Buffer inputBuffer_;
         Buffer outputBuffer_;
         boost::any context_;

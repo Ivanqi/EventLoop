@@ -24,13 +24,21 @@
 class Buffer
 {
     private:
-        std::vector<char> buffer_;
+        /**
+         * 两个index把vector的内容分为3块：prependable、readable、writeable
+         * prependable = readIndex
+         * readable = writeIndex - readIndex
+         * writable = size() - writeIndex
+         * 
+         * 0 <= readerIndex <= writerIndex <= size()
+         */
+        std::vector<char> buffer_;  // 连续内存
         size_t readerIndex_;
         size_t writerIndex_;
         static const char kCRLF[];
 
     public:
-        static const size_t kCheapPrepend = 8;
+        static const size_t kCheapPrepend = 8;  // 定义prepedable的初始大小和writeable初始大小
         static const size_t kInitialSize = 1024;
 
         explicit Buffer(size_t initialSize = kInitialSize): buffer_(kCheapPrepend + kInitialSize), 
