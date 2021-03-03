@@ -9,7 +9,8 @@
 
 Acceptor::Acceptor(EventLoop *loop, const InetAddress& listenAddr, bool reuseport)
     :loop_(loop),  acceptSocket_(sockets::createNonblockingOrDie(listenAddr.family())), 
-    acceptChannel_(loop, acceptSocket_.fd()), listenning_(false), idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))
+    acceptChannel_(loop, acceptSocket_.fd()), listenning_(false), 
+    idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))  // 把标准输入，exec操作重定向到/dev/null,就不会出现在屏幕上
 {
     assert(idleFd_ >= 0);
     

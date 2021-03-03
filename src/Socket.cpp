@@ -83,6 +83,18 @@ void Socket::setTcpNoDelay(bool on)
     ::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY, &optval, static_cast<socklen_t>(sizeof(optval)));
 }
 
+
+/**
+ * SO_REUSEPORT和SO_REUSEADDR 的区别
+ *  1. SO_REUSEPORT是端口重用。SO_REUSEADDR是地址重用
+ *  2. SO_REUSEPORT是允许多个socket绑定到同一个IP + PORT上。SO_REUSEADDR用于对TCP套接字处于TIME_WAIT状态下的socket，才可以重复绑定使用
+ *  3. 两者使用场景完全不同
+ *      1. SO_REUSEADDR 这个套接字选项通知内核，如果端口忙，但TCP状态处于TIME_WAIT，可以重用端口
+ *          这个一般用于当你的程序停止后想立即启动的时候，如果没有这个选项，会报错EADDRINUSE
+ *          需要等到TIME_WAIT结束才能重新绑定到同一个IP + PORT上
+ *      2. SO_REUSEPORT 用于多核环境下，允许多个线程或者进程监听同一个IP + PORT，无论UDP、TCP
+ */
+
 /**
  * TCP套接字处于TIME_WAIT，这个时候SO_RESUADDR就可以起作用，让端口重复绑定适用
  */

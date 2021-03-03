@@ -21,7 +21,8 @@ class TcpServer: boost::noncopyable
         typedef std::function<void(EventLoop*)> ThreadInitCallback;
 
         enum Option {
-            kNoReusePort, kReusePort
+            kNoReusePort,   // 不支持多个进程使用同一个IP + PORT
+            kReusePort      // 支持多个进程使用同一个IP + PORT
         };
 
     private:
