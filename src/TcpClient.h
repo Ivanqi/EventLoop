@@ -66,6 +66,12 @@ class TcpClient
             return name_;
         }
 
+        // 设置connection 回调。不是线程安全
+        void setConnectionCallback(ConnectionCallback cb)
+        {
+            connectionCallback_ = std::move(cb);
+        }
+
         // 设置message回调。不是线程安全
         void setMessageCallback(MessageCallback cb)
         {
