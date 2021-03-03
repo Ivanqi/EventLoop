@@ -25,11 +25,11 @@ class TcpServer: boost::noncopyable
         };
 
     private:
-        /*
-            TcpServer持有目前存活的TcpConnection的shared_ptr(定义为TcpConnectionPtr)
-            因为TcpConnection 对象的生命期是模糊的，用户也可以持有TcpConnectionPtr
-
-            每个TcpConnection对象有一个名字，这个名字是由其所属的TcpServer在创建TcpConnection对象时生成的，名字为ConectionMap的key
+        /**
+         * TcpServer持有目前存活的TcpConnection的shared_ptr(定义为TcpConnectionPtr)
+         * 因为TcpConnection 对象的生命期是模糊的，用户也可以持有TcpConnectionPtr
+         * 每个TcpConnection对象有一个名字，这个名字是由其所属的TcpServer在创建TcpConnection对象时生成的，名字为ConectionMap的key
+         * 
          */
         typedef std::map<string, TcpConnectionPtr> ConectionMap;
 

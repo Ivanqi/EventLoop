@@ -17,8 +17,7 @@ static const in_addr_t kInaddrLoopback = INADDR_LOOPBACK;
 #pragma GCC diagnostic error "-Wold-style-cast"
 
 
-static_assert(sizeof(InetAddress) == sizeof(struct sockaddr_in6),
-              "InetAddress is same size as sockaddr_in6");
+static_assert(sizeof(InetAddress) == sizeof(struct sockaddr_in6), "InetAddress is same size as sockaddr_in6");
               
 static_assert(offsetof(sockaddr_in, sin_family) == 0, "sin_family offset 0");
 

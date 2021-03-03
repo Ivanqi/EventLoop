@@ -10,8 +10,7 @@ EchoServer::EchoServer(EventLoop *loop, const InetAddress& listenAddr)
 {
     server_.setConnectionCallback(std::bind(&EchoServer::onConnection, this, _1));
 
-    server_.setMessageCallback(
-      std::bind(&EchoServer::onMessage, this, _1, _2, _3));
+    server_.setMessageCallback(std::bind(&EchoServer::onMessage, this, _1, _2, _3));
 }
 
 void EchoServer::start()
