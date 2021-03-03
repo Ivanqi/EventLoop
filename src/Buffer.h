@@ -9,6 +9,7 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>
+#include <iostream>
 
 /// A buffer class modeled after org.jboss.netty.buffer.ChannelBuffer
 ///
@@ -102,6 +103,7 @@ class Buffer
         void retrieve(size_t len)
         {
             assert(len <= readableBytes());
+            // 读取len后，需要增加readerIndex_的值
             if (len < readableBytes()) {
                 readerIndex_ += len;
             } else {
@@ -136,6 +138,7 @@ class Buffer
             retrieve(sizeof(int8_t));
         }
 
+        // 已经读取完全部内容，所有把readerIndex_和writerIndex_设置称kCheapPrepend
         void retrieveAll()
         {
             readerIndex_ = kCheapPrepend;
@@ -168,7 +171,9 @@ class Buffer
         void append(const char* /*restrict*/ data, size_t len)
         {
             ensureWritableBytes(len);
+            // 把新的内容拷贝到writeIndex后的内容
             std::copy(data, data + len, beginWrite());
+            // 增加writeIndex的数值
             hasWritten(len);
         }
 
@@ -179,6 +184,7 @@ class Buffer
 
         void ensureWritableBytes(size_t len)
         {
+            // 如果可写入空间小于len，那么合并内存或者扩展内存
             if (writableBytes() < len) {
                 makeSpace(len);
             }
@@ -322,12 +328,13 @@ class Buffer
         void makeSpace(size_t len)
         {
             if (writableBytes() + prependableBytes() < len + kCheapPrepend) {
-                // 移动可读数据
+                // 重新设置存储内存
                 buffer_.resize(writerIndex_ + len);
             } else {
                 // 将可读数据移到前面，在缓冲区内留出空间
                 assert(kCheapPrepend < readerIndex_);
                 size_t readable = readableBytes();
+                // 把readerIndex_到writerIndex_的内存，移动到beign()处
                 std::copy(begin() + readerIndex_, begin() + writerIndex_, begin() + kCheapPrepend);
 
                 readerIndex_ = kCheapPrepend;
