@@ -1,5 +1,6 @@
 #include "Buffer.h"
 #include "assert.h"
+#include <utility>
 #include <iostream>
 using namespace std;
 
@@ -96,9 +97,68 @@ void test_case_4() {
     assert(buf.prependableBytes() == Buffer::kCheapPrepend);
 }
 
+void test_case_5() {
+    Buffer buf;
+    buf.append(string(200, 'y'));
+    assert(buf.readableBytes() == 200);
+    assert(buf.writableBytes() == Buffer::kInitialSize - 200);
+    assert(buf.prependableBytes() == Buffer::kCheapPrepend);
+
+    int x = 0;
+    buf.prepend(&x, sizeof(x));
+    assert(buf.readableBytes() == 204);
+    assert(buf.writableBytes() == Buffer::kInitialSize - 200);
+    assert(buf.prependableBytes() == Buffer::kCheapPrepend - 4);
+}
+
+void test_case_6() {
+    Buffer buf;
+    buf.append("HTTP");
+
+    assert(buf.readableBytes() == 4);
+    assert(buf.peekInt8() == 'H');
+
+    int top16 = buf.peekInt16();
+    assert(top16 == ('H' * 256 + 'T'));
+    assert(buf.peekInt32() != (top16 * 65535 + 'T' * 256 + 'P'));
+
+    assert(buf.readInt8() == 'H');
+    assert(buf.readInt16() == ('T' * 256 + 'T'));
+    assert(buf.readInt8() == 'P');
+    assert(buf.readableBytes() == 0);
+    assert(buf.writableBytes() == Buffer::kInitialSize);
+
+    buf.appendInt8(-1);
+    buf.appendInt16(-2);
+    buf.appendInt32(-3);
+    assert(buf.readableBytes() == 7);
+    assert(buf.readInt8() == -1);
+    assert(buf.readInt16() == -2);
+    assert(buf.readInt32() == -3);
+}
+
+void test_case_7() {
+    Buffer buf;
+    buf.append(string(100000, 'x'));
+    const char* null = NULL;
+    assert(buf.findEOL() == null);
+    assert(buf.findEOL(buf.peek() + 90000) == null);
+}
+
+void output(Buffer&& buf, const void* inner) {
+    Buffer newbuf(std::move(buf));
+    assert(inner == newbuf.peek());
+}
+
+void test_case_8() {
+    Buffer buf;
+    buf.append("ivan", 4);
+    const void *inner = buf.peek();
+    output(move(buf), inner);
+}
 
 int main() {
 
-    test_case_4();
+    test_case_8();
     return 0;
 }

@@ -238,7 +238,29 @@ class Buffer
             append(&x, sizeof(x));
         }
 
-        // 读取int64位的主机序列
+        // 读取int32位的主机序列
+        int32_t readInt32()
+        {
+            int32_t result = peekInt32();
+            retrieveInt32();
+            return result;
+        }
+
+        int16_t readInt16()
+        {
+            int16_t result = peekInt16();
+            retrieveInt16();
+            return result;
+        }
+
+        int8_t readInt8()
+        {
+            int8_t result = peekInt8();
+            retrieveInt8();
+            return result;
+        }
+
+        // 看int64位的主机序列
         int64_t peekInt64() const
         {
             assert(readableBytes() >= sizeof(int64_t));
@@ -247,7 +269,7 @@ class Buffer
             return networkToHost64(be64);
         }
 
-        // 读取int32位的主机序列
+        // 看int32位的主机序列
         int32_t peekInt32() const
         {
             assert(readableBytes() >= sizeof(int32_t));
