@@ -121,6 +121,11 @@ class TcpConnection: boost::noncopyable, public std::enable_shared_from_this<Tcp
             context_ = context;
         }
 
+        const boost::any& getContext() const
+        { 
+            return context_; 
+        }
+
         boost::any* getMutableContext()
         {
             return &context_;
