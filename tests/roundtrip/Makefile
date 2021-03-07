@@ -2,7 +2,7 @@ PROJECT := $(shell pwd)
 SRCDIR  := $(PROJECT)/../../
 TEST := $(wildcard $(PROJECT)/*.cpp)
 SRC := $(wildcard $(SRCDIR)/src/*.cpp)
-override SRC := $(SRC) $(TEST) 
+# override SRC := $(SRC) $(TEST) 
 
 CXX := g++
 INCLUDE := -I $(SRCDIR)/src/ -I $(PROJECT)
@@ -10,10 +10,13 @@ CFLAGS := -std=c++11 -g -pg -Wall -O3 -D_PTHREADS
 LIBS := -lpthread
 
 TARGET1 := roundtrip
+TARGET2 := roundtrip_udp
 
 
+$(TARGET1): $(SRC) roundtrip.cpp
+	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
-$(TARGET1): $(SRC)
+$(TARGET2): $(SRC) roundtrip_udp.cpp
 	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean :
