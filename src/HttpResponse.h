@@ -1,6 +1,10 @@
 #ifndef EVENT_HTTPRESPONSE_H
 #define EVENT_HTTPRESPONSE_H
 
+#include "Types.h"
+
+#include <map>
+
 class Buffer;
 class HttpResponse
 {
