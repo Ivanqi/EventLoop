@@ -9,10 +9,10 @@ class HttpContext
     public:
         enum HttpRequestParseState
         {
-            kExpectRequestLine,
-            kExpectHeaders,
-            kExpectBody,
-            kGotAll
+            kExpectRequestLine, // 请求行
+            kExpectHeaders, // 请求头
+            kExpectBody,    // 请求体
+            kGotAll // 已经获取所有信息
         };
 
     private:

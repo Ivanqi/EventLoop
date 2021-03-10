@@ -12,7 +12,12 @@ class HttpRequest
     public:
         enum Method
         {
-            kInvalid, kGet, kPost, kHead, kPut, kDelete
+            kInvalid,   // 无效请求
+            kGet,   // GET请求
+            kPost,  // POST请求
+            kHead,  // Header请求
+            kPut,   // PUT请求
+            kDelete // DELETE请求
         };
 
         enum Version
@@ -135,7 +140,6 @@ class HttpRequest
             }
 
             string value(colon, end);
-
             while (!value.empty() && isspace(value[value.size() - 1])) {
                 value.resize(value.size() - 1);
             }
