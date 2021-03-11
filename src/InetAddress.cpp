@@ -94,6 +94,7 @@ bool InetAddress::resolve(StringArg hostname, InetAddress* out)
     int herrno = 0; 
     memZero(&hent, sizeof(hent));
 
+    // 得到dns信息
     int ret = gethostbyname_r(hostname.c_str(), &hent, t_resolveBuffer, sizeof(t_resolveBuffer), &he, &herrno);
 
     if (ret == 0 && he != NULL) {
