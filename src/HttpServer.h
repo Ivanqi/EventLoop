@@ -37,7 +37,7 @@ class HttpServer
         void start();
     
     private:
-        void onConnection(const TcpConnection& conn);
+        void onConnection(const TcpConnectionPtr& conn);
 
         void onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp receiveTime);
 

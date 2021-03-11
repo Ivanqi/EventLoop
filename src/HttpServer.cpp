@@ -2,6 +2,7 @@
 #include "HttpContext.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+#include <iostream>
 
 void defaultHttpCallback(const HttpRequest&, HttpResponse* resp)
 {
@@ -57,7 +58,6 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
     Buffer buf;
     response.appendToBuffer(&buf);
     conn->send(&buf);
-
     if (response.closeConnection()) {
         conn->shutdown();
     }
