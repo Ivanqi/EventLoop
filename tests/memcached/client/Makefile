@@ -3,7 +3,7 @@ SRCDIR  := $(PROJECT)/../../../
 TEST := $(wildcard $(PROJECT)/*.cpp)
 SRC := $(wildcard $(SRCDIR)/src/*.cpp)
 override SRC := $(SRC) $(TEST) 
-TARGET := memcached_server
+TARGET := memcached_client
 CXX := g++
 INCLUDE := -I $(SRCDIR)/src/ -I $(PROJECT)
 CFLAGS := -std=c++11 -g -pg -Wall -O3 -D_PTHREADS
