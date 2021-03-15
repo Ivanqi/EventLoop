@@ -334,6 +334,12 @@ class Buffer
             swap(other);
         }
 
+        // 返回当前向量分配的存储空间大小
+        size_t internalCapacity() const
+        {
+            return buffer_.capacity();
+        }
+
         ssize_t readFd(int fd, int *savedErrno);
 
     private:

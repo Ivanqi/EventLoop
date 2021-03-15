@@ -4,10 +4,11 @@
 #include "Item.h"
 #include "TcpConnection.h"
 #include <boost/tokenizer.hpp>
+#include <stdio.h>
 using std::string;
 
 class MemcacheServer;
-class Session: public std::enable_shared_from_this<Session>, muduo::noncopyable
+class Session: public std::enable_shared_from_this<Session>
 {
     private:
         enum State
@@ -49,13 +50,46 @@ class Session: public std::enable_shared_from_this<Session>, muduo::noncopyable
 
         // cached
         ItemPtr needle_;
-        Buffer ouputBuf_;
+        Buffer outputBuf_;
 
         // per session stats
         size_t bytesRead_;
-        size_t requestProcessed_;
+        size_t requestsProcessed_;
 
         static string kLongestKey;
+    
+    private:
+        void onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp);
+        void onWriteComplete(const TcpConnectionPtr& conn);
+        void receiveValue(Buffer* buf);
+        void discardValue(Buffer* buf);
+
+        // 如果完成请求，则返回true
+        bool processRequest(StringPiece request);
+        void resetRequest();
+        void reply(StringPiece msg);
+
+        bool doUpdate(Tokenizer::iterator& beg, Tokenizer::iterator end);
+        void doDelete(Tokenizer::iterator& beg, Tokenizer::iterator end);
+
+    public:
+        Session(MemcacheServer *owner, const TcpConnectionPtr& conn)
+            :owner_(owner), conn_(conn), state_(kNewCommand), protocol_(kAscii),
+            noreply_(false), policy_(Item::kInvalid), bytesToDiscard_(0), needle_(Item::makeItem(kLongestKey, 0, 0, 2, 0)),
+            bytesRead_(0), requestsProcessed_(0)
+        {
+            using std::placeholders::_1;
+            using std::placeholders::_2;
+            using std::placeholders::_3;
+
+            conn_->setMessageCallback(std::bind(&Session::onMessage, this, _1, _2, _3));
+        }
+
+        ~Session()
+        {
+            printf("~Session requests processed: %d, input buffer size: %d, output buffer size: %d\n", 
+            (int) requestsProcessed_, (int)conn_->inputBuffer()->internalCapacity(), (int)conn_->outputBuffer()->internalCapacity());
+        }
 };
 
 typedef std::shared_ptr<Session> SessionPtr;

@@ -37,7 +37,7 @@ class Item
             kCas
         };
 
-        static ItemPtr makeItme(StringPiece keyArg, uint32_t flagsArg, int exptimeArg, int valuelen, uint64_t casArg)
+        static ItemPtr makeItem(StringPiece keyArg, uint32_t flagsArg, int exptimeArg, int valuelen, uint64_t casArg)
         {
             return std::make_shared<Item>(keyArg, flagsArg, exptimeArg, valuelen, casArg);
         }
@@ -101,7 +101,7 @@ class Item
             return receivedBytes_ == totalLen() && data_[totalLen() - 2] == '\r' && data_[totalLen() - 1] == '\n';
         }
 
-        void outopt(Buffer *out, bool needCas = false) const;
+        void output(Buffer *out, bool needCas = false) const;
 
         void resetKey(StringPiece k);
     
