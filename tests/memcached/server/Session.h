@@ -13,9 +13,9 @@ class Session: public std::enable_shared_from_this<Session>
     private:
         enum State
         {
-            kNewCommand,
-            kReceiveValue,
-            kDiscardValue
+            kNewCommand,    // 新命令
+            kReceiveValue,  // 接收值
+            kDiscardValue   // 丢弃值
         };
 
         enum Protocol
@@ -25,6 +25,7 @@ class Session: public std::enable_shared_from_this<Session>
             kAuto
         };
 
+        // 空间分隔符
         struct SpaceSeparator
         {
             void reset() {}
@@ -36,15 +37,15 @@ class Session: public std::enable_shared_from_this<Session>
 
         struct Reader;
 
-        MemcacheServer *owner_;
-        TcpConnectionPtr conn_;
-        State state_;
-        Protocol protocol_;
+        MemcacheServer *owner_; // MemcahceServer 实例
+        TcpConnectionPtr conn_; // tcpconnect实例
+        State state_;   //状态机
+        Protocol protocol_; // 协议
 
         // current request
-        string command_;
+        string command_;    // 存储得到的命令
         bool noreply_;
-        Item::UpdatePolicy policy_;
+        Item::UpdatePolicy policy_; // 命令策略
         ItemPtr currItem_;
         size_t bytesToDiscard_;
 
@@ -54,7 +55,7 @@ class Session: public std::enable_shared_from_this<Session>
 
         // per session stats
         size_t bytesRead_;
-        size_t requestsProcessed_;
+        size_t requestsProcessed_;  // 请求数
 
         static string kLongestKey;
     

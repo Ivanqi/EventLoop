@@ -12,17 +12,20 @@ string Session::kLongestKey(kLongestKeySize, 'x');
 template <typename InputIterator, typename Token>
 bool Session::SpaceSeparator::operator()(InputIterator& next, InputIterator end, Token& tok)
 {
+    // next 不等于end, next 不等于空格符
     while (next != end && *next == ' ') {
         ++next;
     }
 
+    // next == end，意味着是空白字符
     if (next == end) {
         tok.clear();
         return false;
     }
 
     InputIterator start(next);
-    const char *sp = static_cast<const char*>(memchr(start, ' ', end - start));
+    const char *sp = static_cast<const char*>(memchr(start, ' ', end - start)); // 寻找空白字符
+    // 如果有空白字符，那么以空白字符为分隔
     if (sp) {
         tok.set(start, static_cast<int>(sp - start));
         next = sp;
@@ -66,11 +69,14 @@ struct Session::Reader
         }
 };
 
+// 读入信息
 void Session::onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
 {
     const size_t initalReadable = buf->readableBytes();
 
+    // buf 的可读空间大于0
     while (buf->readableBytes() > 0) {
+        // state_ 初始值为kNewCommand
         if (state_ == kNewCommand) {
             if (protocol_ == kAuto) {
                 assert(bytesRead_ == 0);
@@ -82,17 +88,17 @@ void Session::onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
             if (protocol_ == kBinary) {
 
             } else {    // ASCII protocol
-                const char *crlf = buf->findCRLF();
+                const char *crlf = buf->findCRLF(); // 寻找\r\n, \r\n为单条命令的结束符
                 if (crlf) {
-                    int len = static_cast<int>(crlf - buf->peek());
-                    StringPiece request(buf->peek(), len);
+                    int len = static_cast<int>(crlf - buf->peek()); // 获取单条命令的长度
+                    StringPiece request(buf->peek(), len);  // 命令
                     if (processRequest(request)) {
                         resetRequest();
                     }
                     buf->retrieveUntil(crlf + 2);
                 } else {
                     if (buf->readableBytes() > 1024) {
-                        conn_->shutdown();
+                        conn_->shutdown();  // 关闭连接
                     }
                     break;
                 }
@@ -161,6 +167,7 @@ void Session::discardValue(Buffer *buf)
     }
 }
 
+// 请求处理
 bool Session::processRequest(StringPiece request)
 {
     assert(command_.empty());
@@ -184,18 +191,14 @@ bool Session::processRequest(StringPiece request)
     Tokenizer tok(request.begin(), request.end(), sep);
     Tokenizer::iterator beg = tok.begin();
 
+    // 空白命令，返回error
     if (beg == tok.end()) {
         reply("ERROR\r\n");
         return true;
     }
 
-    if (beg == tok.end()) {
-        reply("ERROR\r\n");
-        return true;
-    }
-
-    (*beg).CopyToString(&command_);
-    ++beg;
+    (*beg).CopyToString(&command_); // 得到第一个字符
+    ++beg;  // beg的下一个内存地址，指向下一个个字符
 
     if (command_ == "set" || command_ == "add" || command_ == "replace" || command_ == "append" || command_ == "prepend" || command_ == "cas") {
         // 这通常返回false
@@ -280,7 +283,7 @@ bool Session::doUpdate(Session::Tokenizer::iterator& beg, Session::Tokenizer::it
     }
 
     // FIXME: check (beg != end)
-    StringPiece key = (*beg);
+    StringPiece key = (*beg);   // 等到键名
     ++beg;
     bool good = key.size() <= kLongestKeySize;
 

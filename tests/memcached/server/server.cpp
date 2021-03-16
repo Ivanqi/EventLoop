@@ -13,6 +13,7 @@ bool parseCommandLine(int argc, char* argv[], MemcacheServer::Options *options)
 
   	po::options_description desc("Allowed options");
 
+	// add_options() 向 option_description 对象添加选项
   	desc.add_options()
     	("help,h", "Help")
     	("port,p", po::value<uint16_t>(&options->tcpport), "TCP port")
@@ -22,9 +23,14 @@ bool parseCommandLine(int argc, char* argv[], MemcacheServer::Options *options)
       	;
 
 	po::variables_map vm;
+
+	// parse_command_line() 将命令行输入的参数解析出来，store() 解析出的选项存储至variables_map中
 	po::store(po::parse_command_line(argc, argv, desc), vm);
+
+	// notify() 通知variables_map去更新所有外面的外部变量
 	po::notify(vm);
 
+	// count()检测某个选项是否被输入
 	if (vm.count("help")) {
 		return false;
 	}
@@ -32,7 +38,7 @@ bool parseCommandLine(int argc, char* argv[], MemcacheServer::Options *options)
 	return true;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
 	EventLoop loop;
 	EventLoopThread inspectThread;

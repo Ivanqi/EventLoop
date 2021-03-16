@@ -29,11 +29,11 @@ class Item
         enum UpdatePolicy
         {
             kInvalid,
-            kSet,
-            kAdd,
-            kReplace,
-            kAppend,
-            kPrepend,
+            kSet,   // 设置
+            kAdd,   // 增加
+            kReplace,   // 替换
+            kAppend,    // 追加
+            kPrepend,   // 预支
             kCas
         };
 

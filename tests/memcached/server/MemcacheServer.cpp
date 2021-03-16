@@ -126,12 +126,13 @@ bool MemcacheServer::deleteItem(const ConstItemPtr& key)
 
 void MemcacheServer::onConnection(const TcpConnectionPtr& conn)
 {
-    if (conn->connected()) {
-        SessionPtr session(new Session(this, conn));
+    if (conn->connected()) {    // 判断是否是连接状态
+        SessionPtr session(new Session(this, conn));    // 增加用户
         MutexLockGuard lock(mutex_);
         assert(sessions_.find(conn->name()) == sessions_.end());
         sessions_[conn->name()] = session;
     } else {
+        // 如果不是连接状态，就从session列表中删除
         MutexLockGuard lock(mutex_);
         assert(sessions_.find(conn->name()) != sessions_.end());
         sessions_.erase(conn->name());

@@ -19,18 +19,18 @@ class MemcacheServer
         struct Options 
         {
             Options();
-            uint16_t tcpport;
-            uint16_t udpport;
+            uint16_t tcpport;   // tcp 端口
+            uint16_t udpport;   // udp 端口
             uint16_t gperfport;
-            int threads;
+            int threads;    // 线程
         };
     private:
         EventLoop *loop_;
-        Options options_;
-        const time_t startTime_;
-        mutable MutexLock mutex_;
+        Options options_;   // 选项
+        const time_t startTime_;    // 启动时间
+        mutable MutexLock mutex_;   // 互斥锁
         TcpServer server_;
-        std::unordered_map<string, SessionPtr> sessions_;
+        std::unordered_map<string, SessionPtr> sessions_;   // 用户列表
         struct Stats;
 
         // 节省内存的复杂解决方案
