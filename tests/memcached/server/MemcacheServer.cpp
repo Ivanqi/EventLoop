@@ -36,7 +36,9 @@ void MemcacheServer::stop()
 
 bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy policy, bool *exists)
 {
+    // 判断是否是完整的命令
     assert(item->neededBytes() == 0);
+
     MutexLock& mutex = shards_[item->hash() % kShards].mutex;
     ItemMap& items = shards_[item->hash() % kShards].items;
 
@@ -47,6 +49,7 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
 
     if (policy == Item::kSet) {
         item->setCas(g_cas.incrementAndGet());
+        // 存在，就是删除，再重新插入
         if (*exists) {
             items.erase(it);
         }
@@ -106,6 +109,7 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
     return true;
 }
 
+// 寻找item
 ConstItemPtr MemcacheServer::getItem(const ConstItemPtr& key) const
 {
     MutexLock& mutex = shards_[key->hash() % kShards].mutex;
@@ -118,6 +122,7 @@ ConstItemPtr MemcacheServer::getItem(const ConstItemPtr& key) const
 
 bool MemcacheServer::deleteItem(const ConstItemPtr& key)
 {
+    // 用 key->hash() % kShards 得到 shards_数组的下标
     MutexLock& mutex = shards_[key->hash() % kShards].mutex;
     ItemMap& items = shards_[key->hash() % kShards].items;
     MutexLockGuard lock(mutex);

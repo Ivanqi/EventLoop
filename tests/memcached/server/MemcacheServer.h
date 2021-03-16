@@ -59,7 +59,13 @@ class MemcacheServer
         };
 
         const static int kShards = 4096;
-        std::array<MapWithLock, kShards> shards_;
+        /**
+         * 用array存储item
+         * 通过array + set形成一个hash table
+         * 
+         * 这里shards_设置得比较大，因为shards_不是一个动态hash_table
+         * */
+        std::array<MapWithLock, kShards> shards_;   
         std::unique_ptr<Stats> stats_;
 
     public:

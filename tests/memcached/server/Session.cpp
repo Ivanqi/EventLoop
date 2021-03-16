@@ -120,15 +120,20 @@ void Session::receiveValue(Buffer *buf)
     assert(currItem_.get());
     assert(state_ == kReceiveValue);
 
+    // 设置命令的值的长度
     const size_t avail = std::min(buf->readableBytes(), currItem_->neededBytes());
+    // 保证currItem_没有被其他线程修改
     assert(currItem_.unique());
 
+    // 追加 item的value
     currItem_->append(buf->peek(), avail);
     buf->retrieve(avail);
 
     if (currItem_->neededBytes() == 0) {
+        // 命令结束
         if (currItem_->endsWithCRLF()) {
             bool exists = false;
+            // 存储完整的命令，并向客户段返回信息
             if (owner_->storeItem(currItem_, policy_, &exists)) {
                 reply("STORED\r\n");
             } else {
@@ -146,8 +151,11 @@ void Session::receiveValue(Buffer *buf)
             reply("CLIENT_ERROR bad data chunk\r\n");
         }
 
+        /**
+         * 一条命令完成，重置请求
+         */
         resetRequest();
-        state_ = kNewCommand;
+        state_ = kNewCommand;   // 设置成接收新的指令
     }
 }
 
@@ -204,6 +212,16 @@ bool Session::processRequest(StringPiece request)
         // 这通常返回false
         return doUpdate(beg, tok.end());
     } else if (command_ == "get" || command_ == "gets") {
+        /**
+         * get 命令
+         *  get key
+         *  get key1 key2 key3
+         * 
+         * gets 命令
+         *  gets key
+         *  gets key1 key2 key3
+         *  
+         */
         bool cas = command_ == "gets";
 
         // FIXME：使用write complete回调发送多个块
@@ -219,6 +237,7 @@ bool Session::processRequest(StringPiece request)
             ConstItemPtr item = owner_->getItem(needle_);
             ++beg;
             
+            // item输出
             if (item) {
                 item->output(&outputBuf_, cas);
             }
@@ -250,6 +269,7 @@ bool Session::processRequest(StringPiece request)
     return true;
 }
 
+// 所有请求完成，进行reset
 void Session::resetRequest()
 {
     command_.clear();
@@ -266,6 +286,24 @@ void Session::reply(StringPiece msg)
     }
 }
 
+/**
+ * memcache命令
+ *  set key flags exptime bytes [noreply]
+ *  add key flags exptime bytes [noreply]
+ *  replace key flags exptime bytes [noreply]
+ *  append key flags exptime bytes [noreply]
+ *  prepend key flags exptime bytes [noreply]
+ *  cas key flags exptime bytes unique_cas_token [noreply]
+ * 
+ * 参数解释
+ *  key：键值 key-value 结构中的 key，用于查找缓存值
+ *  flags：可以包括键值对的整型参数，客户机使用它存储关于键值对的额外信息
+ *  exptime：在缓存中保存键值对的时间长度（以秒为单位，0 表示永远）
+ *  bytes：在缓存中存储的字节数
+ *  noreply（可选）： 该参数告知服务器不需要返回数据
+ *  unique_cas_token通过 gets 命令获取的一个唯一的64位值
+ *  value：存储的值（始终位于第二行）（可直接理解为key-value结构中的value）
+ */
 bool Session::doUpdate(Session::Tokenizer::iterator& beg, Session::Tokenizer::iterator end)
 {
     if (command_ == "set") {
@@ -293,10 +331,13 @@ bool Session::doUpdate(Session::Tokenizer::iterator& beg, Session::Tokenizer::it
     uint64_t cas = 0;
 
     Reader r(beg, end);
+
+    // 对beg的内容进行解析.
     good = good && r.read(&flags) && r.read(&exptime) && r.read(&bytes);
 
     int rel_exptime = static_cast<int>(exptime);
 
+    // 如果 exptime 大于30天，重新设置rel_exptime的值
     if (exptime > 60 * 60 * 24 * 30) {
         rel_exptime = static_cast<int>(exptime - owner_->startTime());
         if (rel_exptime < 1) {
@@ -310,25 +351,35 @@ bool Session::doUpdate(Session::Tokenizer::iterator& beg, Session::Tokenizer::it
         good = r.read(&cas);
     }
 
+    // 格式错误。现在只允许 uint32_t、time_t、int、uint64_t这几种类型
     if (!good) {
         reply("CLIENT_ERROR bad command line format\r\n");
         return true;
     }
 
+    // bytes超过限定值
     if (bytes > 1024 * 1024) {
         reply("SERVER_ERROR object too large for cache\r\n");
         needle_->resetKey(key);
         owner_->deleteItem(needle_);
         bytesToDiscard_ = bytes + 2;
-        state_ = kDiscardValue;
+        state_ = kDiscardValue; // 准备丢弃该命令
         return false;
     } else {
-        currItem_ = Item::makeItem(key, flags, rel_exptime, bytes + 2, cas);
-        state_ = kReceiveValue;
+        currItem_ = Item::makeItem(key, flags, rel_exptime, bytes + 2, cas);    // 用item存储单个命令
+        state_ = kReceiveValue; // 准备接收值
         return false;
     }
 }
 
+/**
+ * memcache命令
+ *  delete key [noreply]
+ * 
+ * 参数解释
+ *  key：键值 key-value 结构中的 key，用于查找缓存值
+ *  noreply（可选）： 该参数告知服务器不需要返回数据
+ */
 void Session::doDelete(Session::Tokenizer::iterator& beg, Session::Tokenizer::iterator end)
 {
     assert(command_  == "delete");

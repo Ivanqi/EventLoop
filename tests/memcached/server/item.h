@@ -21,20 +21,20 @@ class Item
         const int rel_exptime_;
         const int valuelen_;
         int receivedBytes_;
-        uint64_t cas_;
+        uint64_t cas_; // 原子计数器
         size_t hash_;
         char* data_;
 
     public:
         enum UpdatePolicy
         {
-            kInvalid,
+            kInvalid,   // 无效
             kSet,   // 设置
             kAdd,   // 增加
             kReplace,   // 替换
             kAppend,    // 追加
-            kPrepend,   // 预支
-            kCas
+            kPrepend,   // prepend 命令用于向已存在 key(键) 的 value(数据值) 前面追加数据
+            kCas    // CAS（Check-And-Set 或 Compare-And-Swap） 命令用于执行一个"检查并设置"的操作
         };
 
         static ItemPtr makeItem(StringPiece keyArg, uint32_t flagsArg, int exptimeArg, int valuelen, uint64_t casArg)

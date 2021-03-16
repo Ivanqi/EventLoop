@@ -46,7 +46,7 @@ class Session: public std::enable_shared_from_this<Session>
         string command_;    // 存储得到的命令
         bool noreply_;
         Item::UpdatePolicy policy_; // 命令策略
-        ItemPtr currItem_;
+        ItemPtr currItem_;  // 当前进行中的命令
         size_t bytesToDiscard_;
 
         // cached
