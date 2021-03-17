@@ -115,6 +115,7 @@ void Session::onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
     bytesRead_ += initalReadable - buf->readableBytes();
 }
 
+// 接收value
 void Session::receiveValue(Buffer *buf)
 {
     assert(currItem_.get());
@@ -151,14 +152,13 @@ void Session::receiveValue(Buffer *buf)
             reply("CLIENT_ERROR bad data chunk\r\n");
         }
 
-        /**
-         * 一条命令完成，重置请求
-         */
+        // 一条命令完成，重置请求
         resetRequest();
         state_ = kNewCommand;   // 设置成接收新的指令
     }
 }
 
+// 进行需要丢弃的数据进行处理
 void Session::discardValue(Buffer *buf)
 {
     assert(!currItem_);

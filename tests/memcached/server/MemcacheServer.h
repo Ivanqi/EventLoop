@@ -25,7 +25,7 @@ class MemcacheServer
             int threads;    // 线程
         };
     private:
-        EventLoop *loop_;
+        EventLoop *loop_;   // 主线程loop
         Options options_;   // 选项
         const time_t startTime_;    // 启动时间
         mutable MutexLock mutex_;   // 互斥锁

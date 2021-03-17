@@ -16,14 +16,14 @@ typedef std::shared_ptr<const Item> ConstItemPtr;
 class Item
 {
     private:
-        int keylen_;
+        int keylen_;    // 字符串的长度
         const uint32_t flags_;
-        const int rel_exptime_;
-        const int valuelen_;
-        int receivedBytes_;
-        uint64_t cas_; // 原子计数器
-        size_t hash_;
-        char* data_;
+        const int rel_exptime_; // 过期时间
+        const int valuelen_; // item可以存储的长度
+        int receivedBytes_; // 接受到的字符的数量
+        uint64_t cas_; // 原子计数器，CAS 令牌
+        size_t hash_;   // string 的hash值
+        char* data_;    // item的内容空间，用来存储 命令的key + value
 
     public:
         enum UpdatePolicy

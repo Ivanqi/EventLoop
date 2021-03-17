@@ -47,6 +47,7 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
     
     *exists = it != items.end();
 
+    // set 命令
     if (policy == Item::kSet) {
         item->setCas(g_cas.incrementAndGet());
         // 存在，就是删除，再重新插入
@@ -55,14 +56,14 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
         }
         items.insert(item);
     } else {
-        if (policy == Item::kAdd) {
+        if (policy == Item::kAdd) { // add命令
             if (*exists) {
                 return false;
             } else {
                 item->setCas(g_cas.incrementAndGet());
                 items.insert(item);
             }
-        } else if (policy == Item::kReplace) {
+        } else if (policy == Item::kReplace) {  // replace命令
             if (*exists) {
                 item->setCas(g_cas.incrementAndGet());
                 items.erase(it);
@@ -70,7 +71,7 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
             } else {
                 return false;
             }
-        } else if (policy == Item::kAppend || policy == Item::kPrepend) {
+        } else if (policy == Item::kAppend || policy == Item::kPrepend) {   // append和prepend命令
             if (*exists) {
                 const ConstItemPtr& oldItem = *it;
                 int newLen = static_cast<int>(item->valueLength() + oldItem->valueLength() - 2);
@@ -93,7 +94,7 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
             } else {
                 return false;
             }
-        } else if (policy == Item::kCas) {
+        } else if (policy == Item::kCas) {  // cas命令，检查然后设置
             if (*exists && (*it)->cas() == item->cas()) {
                 item->setCas(g_cas.incrementAndGet());
                 items.erase(it);
@@ -129,6 +130,7 @@ bool MemcacheServer::deleteItem(const ConstItemPtr& key)
     return items.erase(key) == 1;
 }
 
+// 连接毁掉
 void MemcacheServer::onConnection(const TcpConnectionPtr& conn)
 {
     if (conn->connected()) {    // 判断是否是连接状态

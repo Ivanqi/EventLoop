@@ -220,6 +220,7 @@ void TcpConnection::startReadInLoop()
     }
 }
 
+// 收到连接
 void TcpConnection::connectEstablished()
 {
     loop_->assertInLoopThread();
@@ -231,6 +232,7 @@ void TcpConnection::connectEstablished()
     connectionCallback_(shared_from_this());
 }
 
+// 连接销毁
 void TcpConnection::connectDestroyed()
 {
     loop_->assertInLoopThread();

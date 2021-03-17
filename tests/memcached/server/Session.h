@@ -44,10 +44,10 @@ class Session: public std::enable_shared_from_this<Session>
 
         // current request
         string command_;    // 存储得到的命令
-        bool noreply_;
+        bool noreply_;  // 不需要返回信息
         Item::UpdatePolicy policy_; // 命令策略
         ItemPtr currItem_;  // 当前进行中的命令
-        size_t bytesToDiscard_;
+        size_t bytesToDiscard_; // 要丢失的值的字节
 
         // cached
         ItemPtr needle_;
