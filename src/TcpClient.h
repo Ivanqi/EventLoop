@@ -13,14 +13,14 @@ typedef std::shared_ptr<Connector> ConnectorPtr;
 class TcpClient
 {
     private:
-        EventLoop *loop_;
+        EventLoop *loop_;   // loop
         ConnectorPtr connector_;    // 避免露出Connector
-        const string name_;         
-        ConnectionCallback connectionCallback_;
-        MessageCallback messageCallback_;
-        WriteCompleteCallback writeCompleteCallback_;
+        const string name_; // tcpclient 名称      
+        ConnectionCallback connectionCallback_; // connection回调
+        MessageCallback messageCallback_;   // read回调
+        WriteCompleteCallback writeCompleteCallback_;   // 写完成回调
 
-        bool retry_;    // atomic
+        bool retry_;    // atomic, 重连
         bool connect_;  // atomic
 
         // always in loop thread

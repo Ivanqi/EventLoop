@@ -14,23 +14,23 @@ class Client
 	public:
 		enum Operation
 		{
-			kGet,
-			kSet,
+			kGet,	// get命令
+			kSet,	// set 命令
 		};
 
 	private:
-		string name_;
-		TcpClient client_;
-		TcpConnectionPtr conn_;
-		const Operation op_;
-		int send_;
-		int acked_;
-		const int requests_;
-		const int keys_;
+		string name_;	// client 名称
+		TcpClient client_;	// tcp client
+		TcpConnectionPtr conn_; // tcp connect
+		const Operation op_;	// 状态
+		int send_;	// 发送数
+		int acked_;	// 应答数
+		const int requests_;	// 最大请求数
+		const int keys_;	// 客户端的密钥数
 		const int valuelen_;
 		string value_;
-		CountDownLatch* const connected_;
-		CountDownLatch* const finished_;
+		CountDownLatch* const connected_;	// 启动连接的条件变量
+		CountDownLatch* const finished_;	// 关闭连接的条件变量
 	
 	public:
 		Client(const string& name, EventLoop *loop, const InetAddress& serverAdrr, Operation op, 
@@ -57,7 +57,7 @@ class Client
 		{
 			if (conn->connected()) {
 				conn_ = conn;
-				connected_->countDown();
+				connected_->countDown();	// 当有连接的时候，通知所有线程
 			} else {
 				conn_.reset();
 				client_.getLoop()->queueInLoop(std::bind(&CountDownLatch::countDown, finished_));
@@ -100,6 +100,7 @@ class Client
 				}
 			}
 
+			// 达成最大请求数，关闭连接
 			if (acked_ == requests_) {
 				conn_->shutdown();
 			}
@@ -179,6 +180,7 @@ int main(int argc, char* argv[]) {
 		holder.emplace_back(new Client(buf, pool.getNextLoop(), serverAddr, op, requests, keys, valuelen, &connected, &finished));
 	}
 
+	// 当无法连接对端，会在这阻塞
 	connected.wait();
 
 	std::cout << clients << " clients all connected" << std::endl;
@@ -188,6 +190,7 @@ int main(int argc, char* argv[]) {
 		holder[i]->send();
 	}
 
+	// 当client还连接完成阻塞
 	finished.wait();
 	Timestamp end = Timestamp::now();
 	std::cout << "All finished" << std::endl;

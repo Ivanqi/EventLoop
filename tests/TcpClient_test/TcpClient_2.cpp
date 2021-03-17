@@ -17,6 +17,6 @@ int main() {
     loop.runAfter(3.0, std::bind(&EventLoop::quit, &loop));
     Thread thr(std::bind(threadFunc, &loop));
     thr.start();
-    loop.loop();
+    loop.loop(); 
     return 0;
 }

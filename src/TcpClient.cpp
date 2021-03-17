@@ -32,6 +32,7 @@ TcpClient::~TcpClient()
     bool unique = false;
     {
         MutexLockGuard lock(mutex_);
+        // 防止connection_被其他线程修改
         unique = connection_.unique();
         conn = connection_;
     }
