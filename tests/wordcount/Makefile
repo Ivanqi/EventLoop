@@ -10,14 +10,14 @@ LIBS := -lpthread
 
 
 TARGET1 := hasher
-# TARGET2 := sortedlist
+TARGET2 := receiver
 
 
 $(TARGET1): $(SRC) hasher.cpp
 	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
-# $(TARGET2): $(SRC) sortedlist.cpp
-# 	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
+$(TARGET2): $(SRC) receiver.cpp
+	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean :
 	find . -name '*.o' | xargs rm -f

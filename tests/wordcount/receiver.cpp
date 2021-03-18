@@ -1,107 +1,89 @@
-#include "muduo/base/Logging.h"
-#include "muduo/net/EventLoop.h"
-#include "muduo/net/TcpServer.h"
-
-#include "examples/wordcount/hash.h"
+#include "EventLoop.h"
+#include "TcpServer.h"
+#include "hash.h"
 
 #include <fstream>
-
 #include <stdio.h>
 
-using namespace muduo;
-using namespace muduo::net;
-
-class WordCountReceiver : muduo::noncopyable
+class WordCountReceiver
 {
- public:
-  WordCountReceiver(EventLoop* loop, const InetAddress& listenAddr)
-    : loop_(loop),
-      server_(loop, listenAddr, "WordCountReceiver"),
-      senders_(0)
-  {
-    server_.setConnectionCallback(
-         std::bind(&WordCountReceiver::onConnection, this, _1));
-    server_.setMessageCallback(
-        std::bind(&WordCountReceiver::onMessage, this, _1, _2, _3));
-  }
+	private:
+		EventLoop *loop_;
+		TcpServer server_;
+		int senders_;
+		WordCountMap wordcounts_;
+	
+	public:
+		WordCountReceiver(EventLoop *loop, const InetAddress& listenAddr)
+			:loop_(loop), server_(loop, listenAddr, "WordCountReceiver"),
+			senders_(0)
+		{
+			server_.setConnectionCallback(std::bind(&WordCountReceiver::onConnection, this, _1));
 
-  void start(int senders)
-  {
-    LOG_INFO << "start " << senders << " senders";
-    senders_ = senders;
-    wordcounts_.clear();
-    server_.start();
-  }
+			server_.setMessageCallback(std::bind(&WordCountReceiver::onMessage, this, _1, _2, _3));
+		}
 
- private:
-  void onConnection(const TcpConnectionPtr& conn)
-  {
-    LOG_DEBUG << conn->peerAddress().toIpPort() << " -> "
-              << conn->localAddress().toIpPort() << " is "
-              << (conn->connected() ? "UP" : "DOWN");
-    if (!conn->connected())
-    {
-      if (--senders_ == 0)
-      {
-        output();
-        loop_->quit();
-      }
-    }
-  }
+		void start(int senders)
+		{
+			printf("start %d senders\n", senders);
+			senders_ = senders;
+			wordcounts_.clear();
+			server_.start();
+		}
+	
+	private:
+		void onConnection(const TcpConnectionPtr& conn)
+		{
+			string state = conn->connected() ? "UP" : "DOWN";
+    		printf("EchoServer - %s -> %s is %s\n", conn->peerAddress().toIpPort().c_str(), conn->localAddress().toIpPort().c_str(), state.c_str());
 
-  void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp)
-  {
-    const char* crlf = NULL;
-    while ( (crlf = buf->findCRLF()) != NULL)
-    {
-      // string request(buf->peek(), crlf);
-      // printf("%s\n", request.c_str());
-      const char* tab = std::find(buf->peek(), crlf, '\t');
-      if (tab != crlf)
-      {
-        string word(buf->peek(), tab);
-        int64_t cnt = atoll(tab);
-        wordcounts_[word] += cnt;
-      }
-      else
-      {
-        LOG_ERROR << "Wrong format, no tab found";
-        conn->shutdown();
-      }
-      buf->retrieveUntil(crlf + 2);
-    }
-  }
+			if (!conn->connected()) {
+				if (--senders_ == 0) {
+					output();
+					loop_->quit();
+				}
+			}
+		}
 
-  void output()
-  {
-    LOG_INFO << "Writing shard";
-    std::ofstream out("shard");
-    for (WordCountMap::iterator it = wordcounts_.begin();
-         it != wordcounts_.end(); ++it)
-    {
-      out << it->first << '\t' << it->second << '\n';
-    }
-  }
+		void onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp)
+		{
+			const char *crlf = NULL;
+			while ((crlf  = buf->findCRLF()) != NULL) {
+				const char *tab = std::find(buf->peek(), crlf, '\t');
+				if (tab != crlf) {
+					string word(buf->peek(), tab);
+					int64_t cnt = atoll(tab);
+					wordcounts_[word] += cnt;
+				} else {
+					printf("Wrong format, no tab found\n");
+					conn->shutdown();
+				}
+				buf->retrieveUntil(crlf + 2);
+			}
+		}
 
-  EventLoop* loop_;
-  TcpServer server_;
-  int senders_;
-  WordCountMap wordcounts_;
+		void output()
+		{
+			printf("Writing shard\n");
+			std::ofstream out("shard");
+
+			for (WordCountMap::iterator it = wordcounts_.begin(); it != wordcounts_.end(); ++it) {
+				out << it->first << '\t' << it->second << '\n';
+			}
+		}
 };
 
-int main(int argc, char* argv[])
-{
-  if (argc < 3)
-  {
-    printf("Usage: %s listen_port number_of_senders\n", argv[0]);
-  }
-  else
-  {
-    EventLoop loop;
-    int port = atoi(argv[1]);
-    InetAddress addr(static_cast<uint16_t>(port));
-    WordCountReceiver receiver(&loop, addr);
-    receiver.start(atoi(argv[2]));
-    loop.loop();
-  }
+int main(int argc, char* argv[]) {
+
+	if (argc < 3) {
+		printf("Usage: %s listen_port number_of_senders\n", argv[0]);
+	} else {
+		EventLoop loop;
+    	int port = atoi(argv[1]);
+    	InetAddress addr(static_cast<uint16_t>(port));
+    	WordCountReceiver receiver(&loop, addr);
+    	receiver.start(atoi(argv[2]));
+    	loop.loop();
+	}
+	return 0;
 }
