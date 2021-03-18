@@ -4,10 +4,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-const int kBufSize = 64 * 1024
+const int kBufSize = 64 * 1024;
 const char* g_file = NULL;
 
-void onHighWaterMark(const TcpConnectionPtr& conn) {
+void onHighWaterMark(const TcpConnectionPtr& conn, size_t len) {
+    printf("HighWaterMark %d\n", (int)len);
+}
+
+void onConnection(const TcpConnectionPtr& conn) {
     std::string state = (conn->connected() ? "UP" : "DOWN");
     printf("DiscardServer - %s -> %s is %s\n", conn->peerAddress().toIpPort().c_str(), 
     conn->localAddress().toIpPort().c_str(), state.c_str());
@@ -52,7 +56,7 @@ void onWriteComplete(const TcpConnectionPtr& conn)
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
     printf("pid = %d\n", getpid());
     if (argc > 1) {

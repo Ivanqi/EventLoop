@@ -28,7 +28,7 @@ string readFile(const char* filename)
 }
 
 void onHighWaterMark(const TcpConnectionPtr& conn, size_t len) {
-    printf("HighWaterMark %d\n", len);
+    printf("HighWaterMark %d\n", (int)len);
 }
 
 void onConnection(const TcpConnectionPtr& conn)

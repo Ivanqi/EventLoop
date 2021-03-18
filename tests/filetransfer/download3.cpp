@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 void onHighWaterMark(const TcpConnectionPtr& conn, size_t len) {
-    printf("HighWaterMark: %d\n", len);
+    printf("HighWaterMark: %d\n", (int)len);
 }
 
 const int kBufSize = 64 * 1024;
@@ -38,7 +38,7 @@ void onConnection(const TcpConnectionPtr& conn) {
 void onWriteComplete(const TcpConnectionPtr& conn) {
     const FilePtr& fp = boost::any_cast<const FilePtr&>(conn->getContext());
     char buf[kBufSize];
-    size_t nread = ::fread(buf, 1, sizeof(buf, get_pointer(fp)));
+    size_t nread = ::fread(buf, 1, sizeof buf, get_pointer(fp));
 
     if (nread > 0) {
         conn->send(buf, static_cast<int>(nread));
