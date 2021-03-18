@@ -47,13 +47,13 @@ class FastCgiCodec
     private:
         bool parseRequest(Buffer *buf);
         bool onBeginRequest(const RecordHeader& header, const Buffer *buf);
-        void onStdin(const char* content, uint16_t length);
-        bool onParams(const char* content, uint16_t length);
+        void onStdin(const char *content, uint16_t length);
+        bool onParams(const char *content, uint16_t length);
         bool parseAllParams();
         uint32_t readLen();
 
-        static void endStdout(muduo::net::Buffer* buf);
-        static void endRequest(muduo::net::Buffer* buf);
+        static void endStdout(Buffer *buf);
+        static void endRequest(Buffer *buf);
 };
 
 #endif
