@@ -1,4 +1,6 @@
 ### EVENTLOOP
+#### 来源
+- [muduo](https://github.com/chenshuo/muduo)
 
 #### Reactor模式
 - 所谓Reactor模式，是有一个循环的过程，监听对应事件是否触发，触发时调用对应的callback进行处理
