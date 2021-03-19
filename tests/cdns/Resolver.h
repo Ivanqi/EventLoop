@@ -5,6 +5,7 @@
 #include "Timestamp.h"
 #include "InetAddress.h"
 
+#include <ares.h>
 #include <functional>
 #include <map>
 #include <memory>
@@ -13,7 +14,7 @@ extern "C"
 {
     struct hostent;
     struct ares_channeldata;
-    typedef struct ares_channledata *ares_channel;
+    // typedef struct ares_channledata *ares_channel;
 };
 
 class Channel;
@@ -37,15 +38,7 @@ class Resolver
         bool timerActive_;
         typedef std::map<int, std::unique_ptr<Channel>> ChannelList;
         ChannelList channels_;
-    
-    public:
-        explicit Resolver(EventLoop *loop, Option opt = kDNSandHostsFile);
 
-        ~Resolver();
-
-        bool resolve(StringArg hostname, const Callback& cb);
-    
-    private:
         struct QueryData
         {
             Resolver *owner;
@@ -56,7 +49,15 @@ class Resolver
 
             }
         };
+    
+    public:
+        explicit Resolver(EventLoop *loop, Option opt = kDNSandHostsFile);
 
+        ~Resolver();
+
+        bool resolve(StringArg hostname, const Callback& cb);
+    
+    private:
         void onRead(int sockfd, Timestamp t);
 
         void onTimer();
@@ -69,7 +70,7 @@ class Resolver
 
         static void ares_host_callback(void *data, int status, int timeouts, struct hostent *hostent);
 
-        static void ares_sock_create_callback(int sockfd, int type, void *data);
+        static int ares_sock_create_callback(int sockfd, int type, void *data);
 
         static void ares_sock_state_callback(void *data, int sockfd, int read, int write);
 };

@@ -2,7 +2,6 @@
 #include "Channel.h"
 #include "EventLoop.h"
 
-#include <ares.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -74,7 +73,7 @@ bool Resolver::resolve(StringArg hostname, const Callback& cb)
     ares_gethostbyname(ctx_, hostname.c_str(), AF_INET, &Resolver::ares_host_callback, queryData);
 
     struct timeval tv;
-    struct timeval *tvp = ares_timeout(ctx, NULL, &tv);
+    struct timeval *tvp = ares_timeout(ctx_, NULL, &tv);
     double timeout = getSeconds(tvp);
 
     printf("timeout %lf active %d\n", timeout, timerActive_);
@@ -88,7 +87,7 @@ bool Resolver::resolve(StringArg hostname, const Callback& cb)
 
 void Resolver::onRead(int sockfd, Timestamp t)
 {
-    printf("onRead %d at %d\n", sockfd, t.toString().c_str());
+    printf("onRead %d at %s\n", sockfd, t.toString().c_str());
     ares_process_fd(ctx_, sockfd, ARES_SOCKET_BAD);
 }
 
@@ -123,7 +122,7 @@ void Resolver::onQueryResult(int status, struct hostent* result, const Callback&
         addr.sin_addr = *reinterpret_cast<in_addr*>(result->h_addr);
         if (kDebug) {
             printf("h_name %s\n", result->h_name);
-            for (char **alias = result->h_aliases; *alias != NULL, ++alias) {
+            for (char **alias = result->h_aliases; *alias != NULL; ++alias) {
                 printf("alias: %s\n", *alias);
             }
 
@@ -182,6 +181,6 @@ int Resolver::ares_sock_create_callback(int sockfd, int type, void *data)
 
 void Resolver::ares_sock_state_callback(void* data, int sockfd, int read, int write)
 {
-    printf("sockfd = %d type = %s\n", sockfd, getSocketType(type));
+    printf("sockfd = %d read = %d write=%d\n", sockfd, read, write);
     static_cast<Resolver*>(data)->onSockStateChange(sockfd, read, write);
 }
