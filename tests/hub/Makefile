@@ -10,10 +10,15 @@ LIBS := -lpthread
 
 
 TARGET1 := hub
+TARGET2 := pub
 
 $(TARGET1): $(SRC) hub.cpp
+	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
+
+$(TARGET2): $(SRC) pubsub.cpp pub.cpp
 	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean :
 	find . -name '*.o' | xargs rm -f
 	find . -name $(TARGET1) | xargs rm -f
+	find . -name $(TARGET2) | xargs rm -f
