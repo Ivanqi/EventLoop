@@ -83,6 +83,14 @@ class Buffer
             return crlf == beginWrite() ? NULL : crlf;
         }
 
+        const char* findCRLF(const char *start) const
+        {
+            assert(peek() <= start);
+            assert(start <= beginWrite());
+            const char *crlf = std::search(start, beginWrite(), kCRLF, kCRLF + 2);
+            return crlf == beginWrite() ? NULL :crlf;
+        }
+
         const char* findEOL() const
         {
             const void* eol = memchr(peek(), '\n', readableBytes());

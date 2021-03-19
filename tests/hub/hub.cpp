@@ -161,10 +161,10 @@ int main(int argc, char* argv[]) {
         EventLoop loop;
 
         if (argc > 2) {
-        //int inspectPort = atoi(argv[2]);
+            //int inspectPort = atoi(argv[2]);
         }
 
-        pubsub::PubSubServer server(&loop, InetAddress(port));
+        PubSubServer server(&loop, InetAddress(port));
         server.start();
         loop.loop();
 
