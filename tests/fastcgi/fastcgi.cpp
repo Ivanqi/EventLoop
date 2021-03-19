@@ -1,5 +1,6 @@
 #include "fastcgi.h"
 #include "Endian.h"
+#include <stdio.h>
 
 struct FastCgiCodec::RecordHeader
 {
@@ -42,10 +43,12 @@ enum FcgiConstant
 bool FastCgiCodec::onParams(const char *content, uint16_t length)
 {
     if (length > 0) {
-        stdin_.append(content, length);
+        paramsStream_.append(content, length);
     } else {
-        gotRequest_ = true;
+        printf("FastCgiCodec::onParams parseAllParams() failed \n");
+        return false;
     }
+    return true;
 }
 
 void FastCgiCodec::onStdin(const char *content, uint16_t length)
