@@ -15,32 +15,32 @@ class LengthHeaderCodec
         const static size_t kHeaderLen = sizeof(int32_t);
 
     public:
-        explicit LengthHeaderCodec(const StringMessageCallback& cb)
+        LengthHeaderCodec(const StringMessageCallback& cb)
             : messageCallback_(cb)
         {
 
         }
 
-        void onMessage(TcpConnectionPtr& conn, Buffer* buf, Timestamp receiveTime)
+        void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp receiveTime)
         {
-            while (buf->readableBytes() >= kHeaderLen) {
-                const void *data = buf->peek();
-                int32_t be32 = *static_cast<const int32_t*>(data);
-                const int32_t len = networkToHost32(be32);
+            // while (buf->readableBytes() >= kHeaderLen) {
+            //     const void *data = buf->peek();
+            //     int32_t be32 = *static_cast<const int32_t*>(data);
+            //     const int32_t len = networkToHost32(be32);
 
-                if (len > 65536 || len < 0) {
-                    printf("Invalid length %d\n", (int)len);
-                    conn->shutdown();
-                    break;
-                } else if (buf->readableBytes() >= len + kHeaderLen) {
-                    buf->retrieve(kHeaderLen);
-                    string message(buf->peek(), len);
-                    messageCallback_(conn, message, receiveTime);
-                    buf->retrieve(len);
-                } else {
-                    break;
-                }
-            }
+            //     if (len > 65536 || len < 0) {
+            //         printf("Invalid length %d\n", (int)len);
+            //         conn->shutdown();
+            //         break;
+            //     } else if (buf->readableBytes() >= len + kHeaderLen) {
+            //         buf->retrieve(kHeaderLen);
+            //         string message(buf->peek(), len);
+            //         messageCallback_(conn, message, receiveTime);
+            //         buf->retrieve(len);
+            //     } else {
+            //         break;
+            //     }
+            // }
            
         }
 

@@ -5,9 +5,8 @@ SRC := $(wildcard $(SRCDIR)/src/*.cpp)
 # override SRC := $(SRC) $(TEST) 
 CXX := g++
 INCLUDE := -I $(SRCDIR)/src/ -I $(PROJECT)
-CFLAGS := -std=c++11 -g -pg -Wall -O3 -D_PTHREADS
+CFLAGS := -std=c++17 -g -pg -Wall -O3 -D_PTHREADS
 LIBS := -lpthread
-
 
 TARGET1 := chat_server
 TARGET2 := chat_client

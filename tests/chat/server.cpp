@@ -17,7 +17,8 @@ class ChatServer
     
     public:
         ChatServer(EventLoop *loop, const InetAddress& listenAddr)
-            :server_(loop, listenAddr, "ChatServer"), codec_(std::bind(&ChatServer::onStringMessage, this, _1, _2, _3))
+            :server_(loop, listenAddr, "ChatServer")
+            ,codec_(std::bind(&ChatServer::onStringMessage, this, _1, _2, _3))
         {
             server_.setConnectionCallback(std::bind(&ChatServer::onConnection, this, _1));
 
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
         EventLoop loop;
         uint16_t port = static_cast<uint16_t>(atoi(argv[1]));
         InetAddress serverAddr(port);
+
         ChatServer server(&loop, serverAddr);
         server.start();
         loop.loop();
