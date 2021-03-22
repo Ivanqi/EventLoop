@@ -326,6 +326,10 @@ class Buffer
             prepend(&x, sizeof(x));
         }
 
+        /**
+         * 前方添加
+         * preenddata空间，让程序能以很低的代价在数据前面添加几个字节
+         */
         void prepend(const void* /*restrict*/ data, size_t len)
         {
             assert(len <= prependableBytes());
