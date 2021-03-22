@@ -36,6 +36,10 @@ class ChatClient
             client_.disconnect();
         }
 
+        /**
+         * write()会由main线程调用，所以要加锁
+         * 这个锁不是为了保护TcpConnection，而是为了保护shared_ptr
+         *  */
         void write(const StringPiece& message)
         {
             MutexLockGuard lock(mutex_);
@@ -45,6 +49,9 @@ class ChatClient
         }
     
     private:
+        /**
+         * onConnection()会由EventLoop线程调用，所以要加锁以保护shared_ptr
+         */
         void onConnection(const TcpConnectionPtr& conn)
         {
             MutexLockGuard lock(mutex_);
@@ -55,6 +62,10 @@ class ChatClient
             }
         }
 
+        /**
+         * 把收到的信息打印到屏幕。这个函数由EventLoop线程调用，但是不用加锁，因为printf()是线程安全
+         * 注意这里不能用 std::cout <<，它不是线程安全
+         */
         void onStringMessage(const TcpConnectionPtr&, const string& message, Timestamp)
         {
             printf("<<< %s\n", message.c_str());

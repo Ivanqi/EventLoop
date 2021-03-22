@@ -76,6 +76,7 @@ void TcpConnection::send(Buffer *buf)
 {
     if (state_ == kConnected) {
         if (loop_->isInLoopThread()) {
+            printf("TcpConnection::send1\n");
             sendInLoop(buf->peek(), buf->readableBytes());
             buf->retrieveAll();
         } else {

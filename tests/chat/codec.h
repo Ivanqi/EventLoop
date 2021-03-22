@@ -23,27 +23,29 @@ class LengthHeaderCodec
 
         void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp receiveTime)
         {
-            // while (buf->readableBytes() >= kHeaderLen) {
-            //     const void *data = buf->peek();
-            //     int32_t be32 = *static_cast<const int32_t*>(data);
-            //     const int32_t len = networkToHost32(be32);
+            while (buf->readableBytes() >= kHeaderLen) {    // kHeaderLen == 4
+                const void *data = buf->peek();             // 到buffer begin + readIndex_的数据
+                int32_t be32 = *static_cast<const int32_t*>(data);
+                const int32_t len = networkToHost32(be32);
 
-            //     if (len > 65536 || len < 0) {
-            //         printf("Invalid length %d\n", (int)len);
-            //         conn->shutdown();
-            //         break;
-            //     } else if (buf->readableBytes() >= len + kHeaderLen) {
-            //         buf->retrieve(kHeaderLen);
-            //         string message(buf->peek(), len);
-            //         messageCallback_(conn, message, receiveTime);
-            //         buf->retrieve(len);
-            //     } else {
-            //         break;
-            //     }
-            // }
+                if (len > 65536 || len < 0) {
+                    printf("Invalid length %d\n", (int)len);
+                    conn->shutdown();
+                    break;
+                } else if (buf->readableBytes() >= len + kHeaderLen) {
+                    buf->retrieve(kHeaderLen);
+                    string message(buf->peek(), len);
+                    messageCallback_(conn, message, receiveTime);
+                    buf->retrieve(len);
+                } else {
+                    break;
+                }
+            }
            
         }
-
+        /**
+         * 这段代码把 string message 打包为Buffer，并通过conn发送
+         */
         void send(TcpConnection *conn, const StringPiece& message)
         {
             Buffer buf;
