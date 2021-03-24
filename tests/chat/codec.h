@@ -27,7 +27,7 @@ class LengthHeaderCodec
                 const void *data = buf->peek();             // 到buffer begin + readIndex_的数据
                 int32_t be32 = *static_cast<const int32_t*>(data);
                 const int32_t len = networkToHost32(be32);
-
+                printf("message:%d\n", len);
                 if (len > 65536 || len < 0) {
                     printf("Invalid length %d\n", (int)len);
                     conn->shutdown();

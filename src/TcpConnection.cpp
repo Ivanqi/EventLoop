@@ -104,6 +104,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
 
     // 如果输出队列中没有任何内容，请尝试直接写入
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
+        printf("sockets::write:%d\n", channel_->fd());
         nwrote = sockets::write(channel_->fd(), data, len);
         if (nwrote >= 0) {
             remaining = len - nwrote;
