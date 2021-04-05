@@ -51,7 +51,7 @@ bool FastCgiCodec::onParams(const char *content, uint16_t length)
 {
     if (length > 0) {
         paramsStream_.append(content, length);
-    } else {
+    } else if (!parseAllParams()){
         printf("FastCgiCodec::onParams parseAllParams() failed \n");
         return false;
     }
@@ -166,6 +166,8 @@ bool FastCgiCodec::parseRequest(Buffer *buf)
         memcpy(&header, buf->peek(), kRecordHeader);
         header.id = networkToHost16(header.id);
         header.length = networkToHost16(header.length);
+
+        printf("version = %d, type = %d\n", header.version, header.type);
 
         size_t total = kRecordHeader + header.length + header.padding;
 

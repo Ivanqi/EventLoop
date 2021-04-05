@@ -3,12 +3,11 @@
 #include "TcpServer.h"
 #include <iostream>
 
-const string kPath = "./";
+const string kPath = "/fastcgi/";
 
 void onRequest(const TcpConnectionPtr& conn, FastCgiCodec::ParamMap& params, Buffer *in)
 {
 	string uri = params["REQUEST_URI"];
-	std::cout << conn->name() << ":" << uri << std::endl;
 
 	for (FastCgiCodec::ParamMap::const_iterator it = params.begin(); it != params.end(); ++it) {
 		std::cout << it->first << " = " << it->second << std::endl;
