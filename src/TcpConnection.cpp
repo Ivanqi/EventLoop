@@ -144,7 +144,7 @@ void TcpConnection::shutdown()
 {
     // 使用比较和交换
     if (state_ == kConnected) {
-        setState(kDisconnected);
+        setState(kDisconnecting);
         loop_->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
     }
 }
@@ -305,6 +305,7 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
+    printf("fd = %d state = %s\n", channel_->fd(), stateToString());
     assert(state_ == kConnected || state_ == kDisconnecting);
 
     // 我们不关闭fd，把它交给dtor，这样我们可以很容易地找到泄漏
