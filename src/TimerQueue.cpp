@@ -33,7 +33,9 @@ struct timespec howMuchTimeFromNow(Timestamp when)
     }
 
     struct timespec ts;
+    // 秒
     ts.tv_sec = static_cast<time_t> (microseconds / Timestamp::kMicroSecondsPerSecond);
+    // 纳秒
     ts.tv_nsec = static_cast<long> ((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000);
 
     return ts;
