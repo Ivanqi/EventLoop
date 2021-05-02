@@ -13,7 +13,7 @@ TARGET1 := idleconnection
 TARGET2 := sortedlist
 
 
-$(TARGET1): $(SRC) echo.cpp
+$(TARGET1): $(SRC) echo.cpp main.cpp
 	$(CXX) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 $(TARGET2): $(SRC) sortedlist.cpp
