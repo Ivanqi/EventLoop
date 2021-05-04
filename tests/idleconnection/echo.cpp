@@ -50,6 +50,8 @@ void EchoServer::onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp 
     conn->send(msg);
 
     assert(!conn->getContext().empty());
+    // 收到信息时，从TcpConnection的context中取出Entry的弱引用，把它提升为强引用EntryPtr
+    // 然后放到当前的timing wheel队尾
     WeakEntryPtr weakEntry(boost::any_cast<WeakEntryPtr>(conn->getContext()));
     EntryPtr entry(weakEntry.lock());
 
